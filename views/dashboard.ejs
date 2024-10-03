@@ -1,0 +1,193 @@
+<%- include("header", {title: title}); %>
+<link rel="stylesheet" href="/style/dashboard.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <div id="main_view">
+        <nav id="navbar">
+            <h1 id="navbar_title">Ticket System</h1>
+
+            <h3>Logged in as: <%= user.displayName %></h3>
+        </nav>
+        
+        <div id="main_container">
+            <div id="sidebar">
+                <div id="sidebar_navigation">
+                    <button class="sidebar_button" id="sidebar_selected"><i class="material-icons">dashboard</i>DASHBOARD</button>
+                    <button class="sidebar_button" onclick="window.location='/knowledgeBoard'"><i class="material-icons">auto_stories</i>BOARD</button>
+                    <button class="sidebar_button" onclick="window.location='/agentPanel'"><i class="material-icons">admin_panel_settings</i>AGENTS</button>
+                </div>
+
+                <button id="logout_button" onclick="window.location='/logout'">Logout <i class="fa fa-sign-out"></i></button>
+            </div>
+    
+            <div id="floating_container">
+                <div id="container_header">
+                    <div id="header_left">
+                        <h1 id="view_title"></h1>
+                        
+                        <input id="searchbar" type="text" placeholder="Search...">
+                        
+                        <button id="filter_button">Filter</button>
+
+                        <div id="filter_box_container">
+                            <div id="filter_box">
+                                <div id="checkbox_lists">
+                                    <div class="checkbox_list">
+                                        <h4>Category</h4>
+                                        <div id="filter_category" name="filter_category" class="checkbox_list">
+                                            <% for(i = 0; i < categories.length; i++) { %>
+                                                <div class="checkbox_container">
+                                                    <label for="<%= i %>"><%= categories[i].name %></label>
+                                                    <input type="checkbox" name="<%= i %>" value="<%= categories[i].name %>">
+                                                </div>
+                                            <% } %>
+                                            <div class="checkbox_container">
+                                                <label for="none">None</label>
+                                                <input type="checkbox" name="none" value="None Selected">
+                                            </div>
+                                        </div>
+                                    </div>
+                        
+                                    <div id="divider"></div>
+
+                                    <div class="checkbox_list">
+                                        <h4>Status</h4>
+                                        <div id="filter_status" name="filter_status" class="checkbox_list">
+                                            <div class="checkbox_container">
+                                                <label for="status_open">Open</label>
+                                                <input type="checkbox" name="status_open" value="Open">
+                                            </div>
+                                            <div class="checkbox_container">
+                                                <label for="status_in_progress">In Progress</label>
+                                                <input type="checkbox" name="status_in_progress" value="In Progress">
+                                            </div>
+                                            <div class="checkbox_container">
+                                                <label for="status_resolved">Resolved</label>
+                                                <input type="checkbox" name="status_resolved" value="Resolved">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="new_ticket">+</button>
+                </div>
+
+                <div id="scrollable">
+                    <table id="ticket_table">
+                        <colgroup>
+                            <col style="width: 5%">
+                            <col style="width: 20%">
+                            <col style="width: 12%">
+                            <col style="width: 20%">
+                            <col style="width: 20%">
+                            <col style="width: 15%">
+                            <col style="width: 8%">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th id="sortById" onclick="sort_table(0)">ID <span class="arrow"></span></th>
+                                <th id="sortByTitle" onclick="sort_table(1)">Title <span class="arrow"></span></th>
+                                <th id="sortByCategory" onclick="sort_table(2)">Category <span class="arrow"></span></th>
+                                <th id="sortByAgent" onclick="sort_table(3)">Agent <span class="arrow"></span></th>
+                                <th id="sortByAuthor" onclick="sort_table(4)">Author <span class="arrow"></span></th>
+                                <th id="sortByLastChanged" onclick="sort_table(5)">Last Changed <span class="arrow"></span></th>
+                                <th id="sortByStatus" onclick="sort_table(6)">Status <span class="arrow"></span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% for(i = tickets.length - 1; i >= 0; i--) { %>
+                                <tr class="ticket" onclick="window.location='/dashboard/<%= tickets[i].id %>'">
+                                    <td id="id"><%= tickets[i].id %></td>
+                                    <td id="title"><%= tickets[i].title %></td>
+                                    <td id="category"><%= tickets[i].category_name ? tickets[i].category_name : "None Selected"%></td>
+                                    <td id="agent"><%= tickets[i].agent_name ? tickets[i].agent_name : "None Assigned"%></td>
+                                    <td id="author"><%= tickets[i].author_name %></td>
+                                    <td class="last_changed" data-timestamp="<%= tickets[i].closed_at ? tickets[i].closed_at : (tickets[i].updated_at ? tickets[i].updated_at : tickets[i].opened_at) %>"><%= tickets[i].time_since_change %></td>
+                                    <% if(!tickets[i].agent_id && !tickets[i].closed_at) { %>
+                                        <td id="status_open" class="status">Open</td>
+                                    <% } else if(tickets[i].agent_id && !tickets[i].closed_at) { %>
+                                        <td id="status_in_progress" class="status">In Progress</td>
+                                    <% } else { %>
+                                        <td id="status_resolved" class="status">Resolved</td>
+                                    <% } %>
+                                    <td id="description" hidden><%= tickets[i].description %></td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="my_modal" class="modal">
+            <form action="/dashboard/createTicket" method="post" id="create_ticket_form" enctype="multipart/form-data">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+
+                    <div id="description_container">
+                        <input type="text" id="title_create" name="title" placeholder="Title" required maxlength="200">
+                        
+                        <textarea id="description" name="description" rows="10" cols="40" placeholder="Describe your problem..." required maxlength="5000"></textarea>
+                
+                        <input type="hidden" name="user_id" value="<%= user.id %>">
+                        <input type="hidden" name="user_name" value="<%= user.displayName %>">
+                        <input type="hidden" name="user_email" value="<%= user.emails[0].value %>">
+                    </div>
+                
+                    <div id="extras_container">
+                        <div>
+                            <label for="category">Choose a category:</label>
+                            <select id="category_select" name="category">
+                                <% for (i = 1; i <= categories.length; i++) { %>
+                                    <option value="<%= i %>"><%= categories[i - 1].name %></option>
+                                <% } %>
+                            </select>
+                        </div>
+
+                        <span>Attach files:</span>
+                        <input type="file" name="uploads" id="file_input" multiple/>
+                    </div>
+                
+                    <button type="submit">Create Ticket</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="first_login_modal" class="modal">
+            <div class="modal-content">
+
+                <form action="/dashboard/firstLogin" method="post" id="update_user_form">
+                    <div id="modal_container">
+                        <h1>Please enter a name and a password to use the TicketSystem.</h1>
+
+                        <div class="spacing_container">
+                            <label for="name">Name</label>
+                            <input name="name" required maxlength="100">
+                        </div>
+
+                        <div class="spacing_container">
+                            <label for="password">Password</label>
+                            <input name="password" required type="password" id="password">
+                        </div>
+
+                        <button type="submit">Continue</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const tickets = <%- JSON.stringify(tickets) %>;
+    const user = <%- JSON.stringify(user) %>;
+    const role = <%- JSON.stringify(role) %>;
+</script>
+
+<script src="/scripts/dashboard.js"></script>
+
+<%- include("footer"); %>

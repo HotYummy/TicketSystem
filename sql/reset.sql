@@ -1,0 +1,2 @@
+SOURCE DDL.sql;
+SOURCE DML.sql;

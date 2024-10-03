@@ -1,0 +1,124 @@
+<%- include("header", {title: title}); %>
+<link rel="stylesheet" href="/style/knowledge_board.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <div id="main_view">
+        <nav id="navbar">
+            <h1 id="navbar_title">Ticket System</h1>
+
+            <h3>Logged in as: <%= user.displayName %></h3>
+        </nav>
+        
+        <div id="main_container">
+            <div id="sidebar">
+                <div id="sidebar_navigation">
+                    <button class="sidebar_button" onclick="window.location='/dashboard'"><i class="material-icons" onclick="window.location='/dashboard'">dashboard</i>DASHBOARD</button>
+                    <button class="sidebar_button" id="sidebar_selected" onclick="window.location='/knowledgeBoard'"><i class="material-icons">auto_stories</i>BOARD</button>
+                    <button class="sidebar_button" onclick="window.location='/agentPanel'"><i class="material-icons">admin_panel_settings</i>AGENTS</button>
+                </div>
+
+                <button id="logout_button" onclick="window.location='/logout'">Logout <i class="fa fa-sign-out"></i></button>
+            </div>
+    
+            <div id="floating_container">
+                <div id="container_header">
+                    <div id="header_left">
+                        <h1 id="view_title">Knowledge Board</h1>
+                        
+                        <input id="searchbar" type="text" placeholder="Search...">
+                        
+                        <button id="filter_button">Filter</button>
+
+                        <div id="filter_box_container">
+                            <div id="filter_box">
+                                <div id="checkbox_lists">
+                                    <div class="checkbox_list">
+                                        <h4>Category</h4>
+                                        <div id="filter_category" name="filter_category" class="checkbox_list">
+                                            <% for(i = 0; i < categories.length; i++) { %>
+                                                <div class="checkbox_container">
+                                                    <label for="<%= i %>"><%= categories[i].name %></label>
+                                                    <input type="checkbox" name="<%= i %>" value="<%= categories[i].name %>">
+                                                </div>
+                                            <% } %>
+                                            <div class="checkbox_container">
+                                                <label for="none">None</label>
+                                                <input type="checkbox" name="none" value="None Selected">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="new_post">+</button>
+                </div>
+
+                <div id="scrollable">
+                    <table id="post_table">
+                        <colgroup>
+                            <col style="width: 5%">
+                            <col style="width: 15%">
+                            <col style="width: 50%">
+                            <col style="width: 15%">
+                            <col style="width: 15%">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th id="sortById" onclick="sort_table(0)">ID <span class="arrow"></span></th>
+                                <th id="sortByAuthor" onclick="sort_table(1)">Author <span class="arrow"></span></th>
+                                <th id="sortByContent" onclick="sort_table(2)">Content <span class="arrow"></span></th>
+                                <th id="sortByCategory" onclick="sort_table(3)">Category <span class="arrow"></span></th>
+                                <th id="sortByTimestamp" onclick="sort_table(4)">Posted At <span class="arrow"></span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% for(i = posts.length - 1; i >= 0; i--) { %>
+                                <tr class="post" onclick="window.location='/knowledgeBoard/<%= posts[i].id %>'">
+                                    <td id="id"><%= posts[i].id %></td>
+                                    <td id="author"><%= posts[i].author_name %></td>
+                                    <td id="content"><%= posts[i].content %></td>
+                                    <td id="category"><%= posts[i].category %></td>
+                                    <td id="timestamp"><%= posts[i].formatted_timestamp %></td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="my_modal" class="modal">
+            <form action="/knowledgeBoard/newPost" method="post" id="create_post_form">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+
+                    <div id="description_container">
+                        <textarea id="description" name="content" rows="10" cols="40" placeholder="New post..." required maxlength="3000"></textarea>
+                
+                        <input type="hidden" name="author" value="<%= user.displayName %>">
+                    </div>
+                
+                    <div id="extras_container">
+                        <div>
+                            <label for="category">Choose a category:</label>
+                            <select id="category_select" name="category">
+                                <% for (i = 1; i <= categories.length; i++) { %>
+                                    <option value="<%= i %>"><%= categories[i - 1].name %></option>
+                                <% } %>
+                            </select>
+                        </div>
+                    </div>
+                
+                    <button type="submit">Create Post</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<script src="/scripts/knowledge_board.js"></script>
+
+<%- include("footer"); %>

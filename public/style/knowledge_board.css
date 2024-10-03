@@ -1,0 +1,421 @@
+*{
+    font-family: "Poppins", sans-serif;
+  }
+  
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  
+  body{
+    background: linear-gradient(90deg, rgba(202,215, 253, 1) 0%, rgb(235, 240, 255) 50%);
+      padding: 0;
+      margin: 0;
+  }
+  
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background-color: #5500cb;
+    border-radius: 10px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #380086;
+    transition: background-color 0.2s easy;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background-color: rgb(247, 247, 247);
+    border-radius: 10px;
+  }
+  
+  .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgb(0,0,0);
+      background-color: rgba(0,0,0,0.4);
+    }
+    
+    #modal_content{
+      display: flex;
+      justify-content: space-between;
+      padding: 20px;
+    }
+  
+    #description_container,
+    #extras_container {
+        width: 48%;
+    }
+  
+    #description{
+      width: 60%;
+      padding: 5px 10px;
+      font-size: 16px;
+      line-height: 20px;
+      box-sizing: border-box;
+      resize: none;
+    }
+  
+    #description_container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+  
+    #description_container textarea {
+      width: 100%;
+      box-sizing: border-box;
+    }
+  
+    #extras_container {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+  
+    #extras_container select, 
+    #extras_container button, 
+    #extras_container form {
+        margin-top: 15px;
+    }
+  
+    #category_select{
+      width: 32%;
+    }
+  
+    #title_create{
+      width: 59%;
+      margin-bottom: 15px;
+    }
+  
+    .modal-content {
+      position: relative;
+      background-color: #fefefe;
+      margin: 12% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 50%;
+      height: 40%;
+      box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+      animation-name: animatetop;
+      animation-duration: 0.4s;
+      border-radius: 10px;
+    }
+  
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+    
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+  
+    .modal-header {
+      padding: 2px 16px;
+      background-color: #5cb85c;
+      color: white;
+    }
+  
+    .modal-body {
+      padding: 2px 16px;
+    }
+  
+    .modal-footer {
+      padding: 2px 16px;
+      background-color: #5cb85c;
+      color: white;
+    }
+    
+    @keyframes animatetop {
+      from {top: -20%; opacity: 0}
+      to {top: 0; opacity: 1}
+    }
+  
+  #navbar{
+      width: 100vw;
+      height: 5vh;
+      background-color: #fafaff;
+      box-shadow: 1px 1px 15px rgb(202, 215, 253);
+      z-index: 100;
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+    }
+  
+    #navbar_title{
+      font-size: 27px;
+      font-weight: 600;
+      color: rgb(47, 141, 70);
+    }
+  
+  #main_container{
+      display: flex;
+      position: relative;
+      height: 95vh;
+      z-index: 1;
+    }
+  
+    #floating_container{
+      width: 80%;
+      margin: 3%;
+      padding: 20px;
+      background-color: #fafaff;
+      border-radius: 40px;
+      box-shadow: -1px 5px 12px 15px rgb(202, 215, 253);
+    }
+  
+    #scrollable{
+      width: 100%;
+      height: 90%;
+      margin-right: 7%;
+      overflow-y: auto;
+    }
+  
+    table {
+      width: 100%;
+      margin: 20px 0;
+      font-size: 18px;
+      text-align: left;
+      border-collapse:separate;
+      border-spacing:0 15px;
+      max-height: 300px;
+      overflow-y: auto;
+      table-layout: fixed;
+    }
+  
+    .post{
+      margin-top: 20px;
+      height: 5vh;
+    }
+  
+    .post:hover{
+      background-color: #5500cb;
+      transition: background-color 0.2s ease;
+      color: white;
+    }
+  
+    th, td {
+      padding: 12px;
+      max-height: 50px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  
+    th:hover{
+      cursor: default;
+    }
+  
+    #container_header{
+      height: 80px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 20px 10px 20px;
+      border-bottom: 2px solid rgba(0, 20, 151, 0.59);
+    }
+  
+    #header_left{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+  
+      #view_title{
+        font-size: 30px;
+        font-weight: 600;
+        color: #5500cb;
+      }
+  
+      #searchbar {
+        width: 250px;
+        height: 42px;
+        border-radius: 50px;
+        background-color: #ededed;
+        padding: 0 20px;
+        font-size: 15px;
+        outline: none;
+        border: none;
+        margin-left: 40px;
+      }
+  
+      #filter_button{
+        height: 35px;
+        width: 80px;
+        border-radius: 8px;
+        background-color: #5500cb;
+        color: white;
+        font-size: 15px;
+        border: none;
+        cursor: pointer;
+        font-size: large;
+        margin-left: 40px;
+      }
+  
+        #filter_button:hover{
+          background-color: #380086;
+          cursor: pointer;
+          transition: background-color 0.2s easy;
+        }
+      
+      #filter_box_container {
+        position: relative;
+        width: 400px;
+        height: 200px;
+        overflow: hidden; /* Ensures the box stays within the container */
+        background-color: none;
+        border-radius: 10px;
+        margin-left: 10px;
+        display: none;
+        margin-top: 20%;
+      }
+  
+        #filter_box {
+          display: flex; /* Use flexbox to align items horizontally */
+          flex-wrap: wrap; /* Allow wrapping to the next line if necessary */
+          position: absolute;
+          top: 0;
+          left: -100%; /* Start off the left side */
+          width: 100%;
+          height: 100%;
+          background-color: #ededed;
+          opacity: 0; /* Hidden initially */
+          border-radius: 10px;
+          padding: 10px;
+          overflow-y: auto;
+        }
+  
+          /* Keyframes for sliding the box in */
+          @keyframes slideInFromLeft {
+            from {
+              left: -100%;
+              opacity: 0;
+            }
+            to {
+              left: 0;
+              opacity: 1;
+            }
+          }
+  
+          /* When box is visible and animating in */
+          #filter_box.active {
+            animation: slideInFromLeft 0.5s forwards;
+          }
+  
+          #checkbox_lists {
+            display: flex; /* Align checkbox lists horizontally */
+            gap: 20px; /* Space between the checkbox lists */
+          }
+  
+            #divider{
+              width: 2px;
+              height: 100%;
+              background-color: #aaa;
+            }
+          
+            .checkbox_list {
+                display: flex;
+                flex-direction: column; /* Align checkboxes vertically within each list */
+            }
+          
+          .checkbox_container {
+              display: flex; /* Align label and checkbox horizontally */
+              align-items: center; /* Center items vertically */
+              margin-bottom: 5px; /* Space between each checkbox */
+              justify-content: space-between;
+          }
+  
+    #new_post{
+      height: 35px;
+      width: 50px;
+      border-radius: 8px;
+      background-color: #5500cb;
+      color: white;
+      font-size: 15px;
+      border: none;
+      cursor: pointer;
+      font-size: x-large;
+    }
+  
+      #new_post:hover{
+        background-color: #380086;
+        cursor: pointer;
+        transition: background-color 0.2s easy;
+      }
+  
+  #sidebar{
+      width: 10%;
+      height: 95vh;
+      background-color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    
+    .sidebar_button{
+      padding: 30px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      outline: 0;
+      border: 0;
+      width: 100%;
+      font-size: 17px;
+      margin-top: 50px;
+      background-color: white;
+      font-size: large;
+    }
+  
+    .sidebar_button:hover{
+      background-color: #a564ff4f;
+      cursor: pointer;
+      transition: background-color 0.2s easy;
+    }
+  
+    .sidebar_button i.material-icons {
+      margin-right: 10px;
+    }
+  
+    #sidebar_selected{
+      background-color: #5500cb;
+      color: white;
+    }
+  
+    #logout_button{
+      text-transform: uppercase;
+      outline: 0;
+      background: #5500cb;
+      border: 0;
+      padding: 15px;
+      color: #FFFFFF;
+      font-size: 16px;
+      -webkit-transition: all 0.3 ease;
+      transition: all 0.3 ease;
+      cursor: pointer;
+      margin: 30px;
+    }
+  
+      #logout_button:hover{
+        background-color: #380086;
+        cursor: pointer;
+        transition: background-color 0.2s easy;
+      }

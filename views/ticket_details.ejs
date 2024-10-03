@@ -1,0 +1,194 @@
+<%- include("header", {title: title}); %>
+<link rel="stylesheet" href="/style/ticket_details.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    <div id="main_view">
+        <nav id="navbar">
+            <h1 id="navbar_title">Ticket System</h1>
+
+            <h3>Logged in as: <%= user.displayName %></h3>
+        </nav>
+        
+        <div id="main_container">
+            <div id="sidebar">
+                <div id="sidebar_navigation">
+                    <button class="sidebar_button" onclick="window.location='/dashboard'"><i class="material-icons">dashboard</i>DASHBOARD</button>
+                    <button class="sidebar_button" onclick="window.location='/knowledgeBoard'"><i class="material-icons">auto_stories</i>BOARD</button>
+                    <button class="sidebar_button" onclick="window.location='/agentPanel'"><i class="material-icons">admin_panel_settings</i>AGENTS</button>
+                </div>
+                
+                <button id="logout_button" onclick="window.location='/logout'">Logout <i class="fa fa-sign-out"></i></button>
+            </div>
+
+            <div id="floating_container">
+                <div id="container_header">
+                    <h1 id="title"><%= ticket.title %></h1>
+
+                    <div id="buttons_container">
+                        <% if (!ticket.closed_at && ((role == "Agent" && ticket.agent_id == user.id) || role == "User")) { %>
+                            <% if (role != "User") { %>
+                                <select id="selected_category" onchange="changeCategory()">
+                                    <option value="" disabled selected><%= ticket.category_name ? ticket.category_name : "None Assigned"%></option>
+                                    <% for(i = 0; i < categories.length; i++) { %>
+                                        <option value="<%= categories[i].id %>"> <%= categories[i].name %> </option>
+                                    <% } %>
+                                </select>
+                            <% } %>
+
+                            <form action="/dashboard/<%= ticket.id %>/closeTicket" method="post">
+                                <button id="close_ticket" type="submit" onclick="return confirm('Are you sure you want to close the ticket?');">Close Ticket</button>
+                            </form>
+
+                            <button id="new_comment">+</button>
+                        <% } %>
+
+                        <% if (role == "Agent" && !ticket.agent_id && !ticket.closed_at) { %>
+                            <form action="/dashboard/<%= ticket.id %>/claimTicket" method="post">
+                                <button id="claim_button" type="submit">Claim</button>
+                            </form>
+                        <% } %>
+
+                        <% if (role == "User" && ticket.closed_at && !ticket.reopen_requested && ticket.agent_id) { %>
+                            <form action="/dashboard/<%= ticket.id %>/requestReopenTicket" method="post">
+                                <button id="reopen_button" type="submit" onclick="return confirm('Are you sure you want to request a reopening of this ticket?');">Reopen Ticket</button>
+                            </form>
+                        <% } %>
+                        
+                        <% if (role == "Agent" && ticket.reopen_requested && ticket.agent_id == user.id) { %>
+                            <form action="/dashboard/<%= ticket.id %>/acceptReopenTicket" method="post">
+                                <button id="accept_button" type="submit" onclick="return confirm('Are you sure you want to reopen this ticket?');">Accept Request</button>
+                            </form>
+                        <% } %>
+
+                        <% if (role == "Super Admin") { %>
+                            <select id="selected_agent" onchange="changeAgent()">
+                                <option value="" disabled selected><%= ticket.agent_name ? ticket.agent_name : "None Assigned"%></option>
+                                <% for( let i = 0; i < agents.length; i++ ) { %>
+                                    <option value="<%= i %>"><%= agents[i].name %></option>
+                                <% } %>
+                            </select>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div id="details_container">
+                    <div id = description_container><%= ticket.description %></div>
+
+                    <div id="attachments">
+                        <table id="attachments_table">
+                            <% for( let i = 0; i < files.length; i++ ) { %>
+                                <tr>
+                                    <td>
+                                        <%= files[i].path.split("-")[1] %>
+                                    </td>
+                                    <td>
+                                        <% if (files[i].path.endsWith('.pdf')) { %>
+                                            <a href="/uploads/<%= files[i].path %>" target="_blank">
+                                                <i class="fa fa-file-pdf-o" style="font-size:48px;color:red"></i>
+                                            </a>
+                                        <% } else { %>
+                                            <img class="attachment_image" src="/uploads/<%= files[i].path %>" onclick="openImageModal('<%= files[i].path %>')">
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <a href="/uploads/<%= files[i].path %>" download>
+                                            <span class="material-symbols-outlined">
+                                                download
+                                            </span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            <% } %>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="comments_container">
+                    <div class="comment">
+                        <div class="comment_header">
+                            <div class="comment_author">
+                                <a>System</a>
+                            </div>
+
+                            <div class="comment_timestamp">
+                                <%= ticket.formatted_opened_at %>
+                            </div>
+                        </div>
+
+                        <div class="comment_text">
+                            Ticket opened.
+                        </div>
+                    </div>
+
+                    <% for(i = 0; i < logs.length; i++) { %>
+                        <div class="comment">
+                            <div class="comment_header">
+                                <div class="comment_author">
+                                    <a><%= logs[i].author %></a>
+                                </div>
+    
+                                <div class="comment_timestamp">
+                                    <%= logs[i].formatted_timestamp %>
+                                </div>
+                            </div>
+    
+                            <div class="comment_text">
+                                <%= logs[i].comment %>
+                            </div>
+                        </div>
+                    <% } %>    
+                </div>
+            </div>
+
+            <% if (role != "User") { %>
+                <div id="knowledge_hub_container">
+                    <% if (posts.length > 0) { %>
+                        <% for( let i = 0; i < Math.min(2, posts.length); i++ ) { %>
+                            <div class="post_recommendation">
+                                <div class="post_header">
+                                    <a><%= posts[i].author_name %></a>
+                                </div>
+                                <div class="post_content"><%= posts[i].content %></div>
+                            </div>
+                        <% } %>
+                        <% if (posts.length > 3) { %>
+                            <h4 style="margin-left: 10px;">And <%= posts.length - 3 %> more posts...</h4>
+                        <% } %>
+                    <% } else {%>
+                        <h3>There are no posts about this category...</h3>
+                    <% } %>
+                </div>
+            <% } %>
+        </div>
+
+        <div id="my_modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+
+                <form action="/dashboard/<%= ticket.id %>/comment" method="post">
+                    <div id="modal_container">
+                        <textarea id="comment" name="comment" rows="10" cols="40" placeholder="Write a comment..." required maxlength="2000"></textarea>
+                        <input type="hidden" name="author" value="<%= user.displayName %>">
+
+                        <button type="submit">Create Comment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="image_modal" class="modal">
+            <img class="modal-content" id="modal_image">
+        </div>
+    </div>
+
+<script>
+    const ticket = <%- JSON.stringify(ticket) %>;
+    const user = <%- JSON.stringify(user) %>;
+    const role = <%- JSON.stringify(role) %>;
+</script>
+
+<script src="/scripts/ticket_details.js"></script>
+
+<%- include("footer"); %>
