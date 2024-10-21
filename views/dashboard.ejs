@@ -1,4 +1,4 @@
-<%- include("header", {title: title}); %>
+<title><%= title %></title>
 <link rel="stylesheet" href="/style/dashboard.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -7,14 +7,14 @@
     <div id="main_view">
         <nav id="navbar">
             <h1 id="navbar_title">Ticket System</h1>
-
-            <h3>Logged in as: <%= user.displayName %></h3>
+            <div class="header_divider"></div>
+            <h3><%= user.displayName %> (<%= role %>)</h3>
         </nav>
         
         <div id="main_container">
             <div id="sidebar">
-                <div id="sidebar_navigation">
-                    <button class="sidebar_button" id="sidebar_selected"><i class="material-icons">dashboard</i>DASHBOARD</button>
+                <div id="sidebar_navigation" >
+                    <button class="sidebar_button" id="sidebar_selected"><span class="material-symbols-outlined">view_list</span>TICKETS</button>
                     <button class="sidebar_button" onclick="window.location='/knowledgeBoard'"><i class="material-icons">auto_stories</i>BOARD</button>
                     <button class="sidebar_button" onclick="window.location='/agentPanel'"><i class="material-icons">admin_panel_settings</i>AGENTS</button>
                 </div>
@@ -29,7 +29,7 @@
                         
                         <input id="searchbar" type="text" placeholder="Search...">
                         
-                        <button id="filter_button">Filter</button>
+                        <button id="filter_button"><span class="material-symbols-outlined">filter_list</span></button>
 
                         <div id="filter_box_container">
                             <div id="filter_box">
@@ -60,6 +60,10 @@
                                                 <input type="checkbox" name="status_open" value="Open">
                                             </div>
                                             <div class="checkbox_container">
+                                                <label for="status_update">New Update</label>
+                                                <input type="checkbox" name="status_update" value="New Update">
+                                            </div>
+                                            <div class="checkbox_container">
                                                 <label for="status_in_progress">In Progress</label>
                                                 <input type="checkbox" name="status_in_progress" value="In Progress">
                                             </div>
@@ -69,12 +73,28 @@
                                             </div>
                                         </div>
                                     </div>
+                                    
+                                    <div id="divider"></div>
+
+                                    <div class="checkbox_list">
+                                        <h4>Assignment</h4>
+                                        <div id="filter_assignment" name="filter_assignment" class="checkbox_list">
+                                            <div class="checkbox_container">
+                                                <label for="me">My Tickets</label>
+                                                <input type="checkbox" name="me">
+                                            </div>
+                                            <div class="checkbox_container">
+                                                <label for="other">Others Tickets</label>
+                                                <input type="checkbox" name="other">
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <button id="new_ticket">+</button>
+                    <button id="new_ticket"><span class="material-symbols-outlined">playlist_add</span></button>
                 </div>
 
                 <div id="scrollable">
@@ -105,11 +125,17 @@
                                     <td id="id"><%= tickets[i].id %></td>
                                     <td id="title"><%= tickets[i].title %></td>
                                     <td id="category"><%= tickets[i].category_name ? tickets[i].category_name : "None Selected"%></td>
-                                    <td id="agent"><%= tickets[i].agent_name ? tickets[i].agent_name : "None Assigned"%></td>
+                                    <% if (tickets[i].agent_name == user.displayName) { %>
+                                        <td id="agent"><%= tickets[i].agent_name ? tickets[i].agent_name + " (Me)" : "None Assigned"%></td>
+                                    <% } else { %>
+                                        <td id="agent"><%= tickets[i].agent_name ? tickets[i].agent_name : "None Assigned"%></td>
+                                    <% } %>
                                     <td id="author"><%= tickets[i].author_name %></td>
                                     <td class="last_changed" data-timestamp="<%= tickets[i].closed_at ? tickets[i].closed_at : (tickets[i].updated_at ? tickets[i].updated_at : tickets[i].opened_at) %>"><%= tickets[i].time_since_change %></td>
                                     <% if(!tickets[i].agent_id && !tickets[i].closed_at) { %>
                                         <td id="status_open" class="status">Open</td>
+                                    <% } else if(((tickets[i].unread_agent && role != "User") &&  tickets[i].agent_name == user.displayName)|| tickets[i].unread_user && role == "User") { %>
+                                        <td id="status_update" class="status">New Update</td>
                                     <% } else if(tickets[i].agent_id && !tickets[i].closed_at) { %>
                                         <td id="status_in_progress" class="status">In Progress</td>
                                     <% } else { %>
@@ -124,11 +150,11 @@
             </div>
         </div>
 
-        <div id="my_modal" class="modal">
-            <form action="/dashboard/createTicket" method="post" id="create_ticket_form" enctype="multipart/form-data">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
+        <div id="confirmation">Ticket Created</div>
 
+        <div id="my_modal" class="modal">
+            <div class="modal-content">
+                <form action="/dashboard/createTicket" method="post" id="create_ticket_form" enctype="multipart/form-data">
                     <div id="description_container">
                         <input type="text" id="title_create" name="title" placeholder="Title" required maxlength="200">
                         
@@ -138,24 +164,32 @@
                         <input type="hidden" name="user_name" value="<%= user.displayName %>">
                         <input type="hidden" name="user_email" value="<%= user.emails[0].value %>">
                     </div>
-                
+                    <div id="divider"></div>
                     <div id="extras_container">
-                        <div>
-                            <label for="category">Choose a category:</label>
-                            <select id="category_select" name="category">
-                                <% for (i = 1; i <= categories.length; i++) { %>
-                                    <option value="<%= i %>"><%= categories[i - 1].name %></option>
-                                <% } %>
-                            </select>
+                        <div id="category_and_files">
+                            <div id="choose_category">
+                                <h4>Choose a category</h4>
+                                <select id="category_select" name="category">
+                                    <% for (i = 1; i <= categories.length; i++) { %>
+                                        <option value="<%= i %>"><%= categories[i - 1].name %></option>
+                                    <% } %>
+                                </select>
+                            </div>
+                            <div id="divider"></div>
+                            <div id="attachments">
+                                <h4>Attach files</h4>
+                                <input type="file" name="uploads" id="file_input" multiple/>
+                            </div>
                         </div>
 
-                        <span>Attach files:</span>
-                        <input type="file" name="uploads" id="file_input" multiple/>
+                        <div class="horizontal_divider"></div>
+
+                        <div id="button_container">
+                            <button type="submit">Create Ticket</button>
+                        </div>
                     </div>
-                
-                    <button type="submit">Create Ticket</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
 
         <div id="first_login_modal" class="modal">
@@ -164,6 +198,7 @@
                 <form action="/dashboard/firstLogin" method="post" id="update_user_form">
                     <div id="modal_container">
                         <h1>Please enter a name and a password to use the TicketSystem.</h1>
+                        <input type="hidden" value="<%= user.emails[0].value %>" name="email">
 
                         <div class="spacing_container">
                             <label for="name">Name</label>
@@ -186,8 +221,9 @@
     const tickets = <%- JSON.stringify(tickets) %>;
     const user = <%- JSON.stringify(user) %>;
     const role = <%- JSON.stringify(role) %>;
+    const ticket_created = <%- JSON.stringify(ticket_created) ? ticket_created : false%>;
+    const ticket_closed = <%- JSON.stringify(ticket_closed) ? ticket_closed : false %>;
+    const update_tickets = <%- JSON.stringify(update_tickets) %>;
 </script>
 
 <script src="/scripts/dashboard.js"></script>
-
-<%- include("footer"); %>

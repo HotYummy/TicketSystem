@@ -27,6 +27,10 @@ app.use(session({
         httpOnly: true,
         secure: false }
 }));
+app.use((req, res, next) => {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    next();
+});
 app.use(middleware.logIncomingToConsole);
 app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.json());

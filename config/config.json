@@ -1,0 +1,21 @@
+{
+    "mailer": {
+        "EMAIL_ADRESS": "pa1414.example@gmail.com",
+        "APPLICATION_PASSWORD": "fhau ejms lgny qqan",
+        "HOST": "imap.gmail.com",
+        "BYPASS_DOMAIN": "bth",
+        "SUPER_ADMIN_MAIL": "selma.godis@gmail.com"
+    },
+
+    "Auth0": {
+        "CLIENT_DOMAIN": "dev-blk8l122gwbg1okk.us.auth0.com",
+        "CLIENT_ID": "r6bpghFMp2WaCpqT4fwNLlIguyCdMjU3",
+        "CLIENT_SECRET": "t7L-TIspvC3leyLZOoCRe_ioUT2b252xa1BE8Yv3YBf10wd6Yd8H9FRiqZIUKkOK",
+        "CALLBACK_URL": "http://79.76.63.170:3000/callback",
+        "LOGOUT_URL": "http://79.76.63.170:3000/login"
+    },
+
+    "Multer": {
+        "MAX_FILE_SIZE_MB": 1
+    }
+}

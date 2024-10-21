@@ -1,42 +1,34 @@
-var modal = document.getElementById("my_modal");
+var modal = document.getElementById("ticket_modal");
 var new_comment_button = document.getElementById("new_comment");
-var close_button = document.getElementsByClassName("close")[0];
 
-// Open the modal when the new ticket button is clicked
 if(new_comment_button){
   new_comment_button.onclick = function() {
     modal.style.display = "block";
   };
 }
 
-// Close the modal when the close button is clicked
-close_button.onclick = function() {
-  modal.style.display = "none";
-};
-
-// Close the modal if the user clicks anywhere outside it
 window.onclick = function(event) {
   if (event.target === modal) {
     modal.style.display = "none";
   }
 };
 
-// Functionality for the image modal
 var imageModal = document.getElementById("image_modal");
 var modal_image = document.getElementById("modal_image");
 var image_caption = document.getElementById("image_caption");
 
-// Function to open the image modal
 function openImageModal(img) {
     imageModal.style.display = "flex";
     modal_image.src = "/uploads/" + img;
 }
 
-// Close the image modal when the user clicks anywhere outside of the image
 window.onclick = function(event) {
-    if (event.target === imageModal) {
-        imageModal.style.display = "none";
-    }
+  if (event.target === imageModal) {
+    imageModal.style.display = "none";
+  }
+  if (event.target === modal) {
+    modal.style.display = "none";
+  }
 };
 
 // Change the category of the ticket as an agent
@@ -65,7 +57,7 @@ function changeCategory() {
 // Make the system comments slightly darker
 const comments = document.getElementById("comments_container").getElementsByClassName("comment");
 
-for(i = 0; i < comments.length; i++){
+for(let i = 0; i < comments.length; i++){
   if(comments[i].innerText.includes("System")){
     comments[i].getElementsByClassName("comment_text")[0].style.backgroundColor = "#d7f2e0";
   }
@@ -75,11 +67,11 @@ for(i = 0; i < comments.length; i++){
 }
 
 // Change the category of the ticket as an agent
+const select_agent = document.getElementById("selected_agent");
+
 function changeAgent() {
-  const select_agent = document.getElementById("selected_agent");
   const new_agent_index = select_agent.value;
   const selected_agent_text = select_agent.options[select_agent.selectedIndex].text;
-
   if(selected_agent_text != ticket.agent_name){
     fetch(`/dashboard/${ticket.id}/changeAgent`, {
       method: 'POST',
@@ -97,4 +89,65 @@ function changeAgent() {
   
     location.reload();
   }
+}
+
+if(select_agent){
+  for(let i = 0; i < select_agent.options.length; i++){
+    if (select_agent.options[i].text == user.displayName){
+      select_agent.options[i].text += " (Me)"; 
+    }
+  }
+}
+
+if(role == "User") {
+  document.getElementById("floating_container").style.width = "100%";
+}
+
+if(files.length == 0){
+  document.getElementById("attachments_container").style.display = "none";
+  document.getElementsByClassName("horizontal_divider")[1].style.display = "none";
+}
+
+if(role == "User"){
+  const sidebar_buttons = document.getElementsByClassName("sidebar_button");
+  sidebar_buttons[1].style.color = "grey";
+  sidebar_buttons[1].disabled = true;
+  sidebar_buttons[2].style.color = "grey";
+  sidebar_buttons[2].disabled = true;
+}
+
+let notif = false;
+let i = 0;
+
+while(notif == false && i < tickets.length){
+  if((tickets[i].unread_agent && tickets[i].agent_name == user.displayName && role != "User") || (tickets[i].unread_user && role == "User")){
+    notif = true;
+  }
+  i++;
+}
+
+if(notif == true){
+  document.getElementsByClassName("sidebar_button")[0].innerHTML += '<span class="material-symbols-outlined">notifications</span>'
+}
+
+if(role == "Super Admin" && update_tickets.length > 0){
+  document.getElementsByClassName("sidebar_button")[2].innerHTML += `<div id="update_amount">(${update_tickets.length})</div>`
+}
+
+function comment(content){
+  fetch(`/dashboard/${ticket.id}/comment`, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ comment: content, author: user.displayName })
+  })
+  .then(() => {
+      console.log('Request sent successfully');
+  })
+  .catch(error => {
+      console.error('Error:', error);
+  });
+
+  location.reload();
 }

@@ -13,6 +13,7 @@ const Auth0Strategy = require('passport-auth0');
 const multer = require("multer");
 const path = require("path");
 const axios = require("axios");
+const fs = require("fs");
 
 router.use(passport.initialize());
 router.use(passport.session());
@@ -36,23 +37,20 @@ passport.deserializeUser((user, done) => {
 
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        // Uploads is the Upload_folder_name
         cb(null, path.join(__dirname, '../public/uploads'));
     },
     filename: function (req, file, cb) {
-        cb(null, Date.now() + "-" + file.originalname);
+        const originalName = Buffer.from(file.originalname, 'latin1').toString('utf-8');
+        cb(null, Date.now() + '-' + originalName);
     },
 });
 
-// Define the maximum size for uploading
-// picture i.e. 1 MB. it is optional
-const maxSize = 1 * 1000 * 1000;
+const max_size = config.Multer.MAX_FILE_SIZE_MB * 1000 * 1000;
 
 var upload = multer({
     storage: storage,
-    limits: { fileSize: maxSize, files: 10 },
+    limits: { fileSize: max_size, files: 10 },
     fileFilter: function (req, file, cb) {
-        // Set the filetypes, it is optional
         var filetypes = /jpeg|jpg|png|pdf/;
         var mimetype = filetypes.test(file.mimetype);
 
@@ -71,7 +69,6 @@ var upload = multer({
         );
     },
 
-    // mypic is the name of file attribute
 }).array("uploads", 10);
 
 router.get('/login', passport.authenticate('auth0', {
@@ -119,8 +116,13 @@ router.get("/dashboard", isAuthenticated, async (req, res) => {
         title: "Dashboard",
         user,
         role: req.session.roles[0],
-        categories: await funcs.getCategories()
+        categories: await funcs.getCategories(),
+        ticket_created: req.session.ticket_created,
+        ticket_closed: req.session.ticket_closed,
+        update_tickets: await funcs.getTicketsNotification()
     };
+    req.session.ticket_created = false;
+    req.session.ticket_closed = false;
 
     if(req.session.roles.includes("User")){
         data.tickets = await funcs.getTicketsByUserId(data.user.id);
@@ -131,8 +133,8 @@ router.get("/dashboard", isAuthenticated, async (req, res) => {
 });
 
 router.post("/dashboard/firstLogin", isAuthenticated, async (req, res) => {
-    const { name, password } = req.body;
-    await funcs.updateUserOnFirstLogin(req.user.id, name, password);
+    const { name, password, email } = req.body;
+    await funcs.updateUserOnFirstLogin(req.user.id, name, password, email);
     req.user.displayName = name;
     req.session.save((err) => {
         if (err) {
@@ -146,10 +148,14 @@ router.post("/dashboard/firstLogin", isAuthenticated, async (req, res) => {
 router.post("/dashboard/createTicket", isAuthenticated, upload, async (req, res) => {
     const { title, user_id, user_name, user_email, category, description } = req.body;
     const ticket_id = await funcs.createTicket(title, user_id, user_email, user_name, category, description);
-
-    if (req.files && req.files.length > 0) {
-        await funcs.uploadFiles(req.files, ticket_id[0].id);
+    if(req.files.length > 0){
+        const file_names = req.files.map(file => file.filename);
+        for (const name of file_names) {
+            await funcs.uploadFiles(name, ticket_id[0].id);
+        }
     }
+
+    req.session.ticket_created = true;
 
     res.redirect("/dashboard");
 });
@@ -166,18 +172,35 @@ router.get("/dashboard/:id", isAuthenticated, ticketAccess, async (req, res) => 
     let agents = req.session.agents;
 
     if (!agents) {
-        const options = {
+        const accessToken = await funcs.getAccessToken();
+
+        const agent_options = {
             method: 'GET',
             url: `https://${config.Auth0.CLIENT_DOMAIN}/api/v2/roles/rol_O69N7QGMEMtlMDhZ/users`,
-            headers: { 
+            headers: {
                 'content-type': 'application/json',
-                'Authorization': `Bearer ${await funcs.getAccessToken()}`
+                'Authorization': `Bearer ${accessToken}`
             }
         };
-        const response = await axios(options);
-        agents = response.data;
+        const agent_response = await axios(agent_options);
+        agents = agent_response.data;
+
+        const super_admin_options = {
+            method: 'GET',
+            url: `https://${config.Auth0.CLIENT_DOMAIN}/api/v2/roles/rol_u1DXizL9RSrfy4lj/users`,
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`
+            }
+        };
+        const super_admin_response = await axios(super_admin_options);
+        
+        agents = agents.concat(super_admin_response.data);
+
         req.session.agents = agents;
     }
+
+    await funcs.updateUnread(req.session.roles[0], req.params.id, false)
 
     let ticket = await funcs.getTicketByTicketId(id);
 
@@ -190,11 +213,14 @@ router.get("/dashboard/:id", isAuthenticated, ticketAccess, async (req, res) => 
         categories: await funcs.getCategories(),
         files: await funcs.getFiles(id),
         agents,
-        posts: await funcs.getKnowledgeBoardPostsByCategory(ticket.category_name)
+        posts: await funcs.getKnowledgeBoardPostsForTicket(ticket.description, ticket.category_name),
+        tickets: await funcs.getTickets(),
+        update_tickets: await funcs.getTicketsNotification()
     };
 
     res.render("ticket_details", data);
 });
+
 
 router.post("/dashboard/:id/claimTicket", isAuthenticated, ensureAgentOrAdmin, async (req, res) => {
     const ticket_id = req.params.id;
@@ -210,14 +236,19 @@ router.post("/dashboard/:id/closeTicket", isAuthenticated, ticketAccess, async (
     await funcs.closeTicket(ticket_id);
     await funcs.addSystemLog(ticket_id, `Issue has been resolved.`)
     await funcs.sendUpdateMail(req.session.roles[0], ticket_id, "closed")
+    req.session.ticket_closed = true;
     res.redirect("/dashboard");
 });
 
 router.post("/dashboard/:id/comment", isAuthenticated, ticketAccess, async (req, res) => {
     const ticket_id = req.params.id;
     const { comment, author} = req.body;
-    await funcs.newComment(ticket_id, author, comment);
-    await funcs.sendUpdateMail(req.session.roles[0], ticket_id, "comment", comment)
+    await funcs.newComment(ticket_id, author, comment, req.user._json.email, req.session.roles[0]);
+    if(req.session.roles[0] == "User"){
+        await funcs.updateUnread("Agent", req.params.id, true)
+    } else {
+        await funcs.updateUnread("User", req.params.id, true)
+    }
     res.redirect(`/dashboard/${ticket_id}`);
 });
 
@@ -244,14 +275,23 @@ router.post("/dashboard/:id/acceptReopenTicket", isAuthenticated, ensureAgentOrA
     res.redirect(`/dashboard/${ticket_id}`);
 });
 
+router.post("/dashboard/:id/denyReopenTicket", isAuthenticated, ensureAgentOrAdmin, async (req, res) => {
+    const ticket_id = req.params.id;
+    await funcs.denyReopenTicket(ticket_id)
+    await funcs.addSystemLog(ticket_id, `Reopen request denied.`)
+    res.redirect(`/dashboard/${ticket_id}`);
+});
+
 router.post("/dashboard/:id/changeAgent", isAuthenticated, ensureAgentOrAdmin, async (req, res) => {
     const { new_agent_index } = req.body;
-    console.log(new_agent_index)
     const new_agent_name = req.session.agents[new_agent_index].name;
     const new_agent_email = req.session.agents[new_agent_index].email;
     const new_agent_id = req.session.agents[new_agent_index].user_id;
     const ticket_id = req.params.id;
     await funcs.changeAgent(new_agent_name, new_agent_email, new_agent_id, ticket_id);
+    if(new_agent_name != req.user.displayName){
+        await funcs.sendUpdateMail("Agent", ticket_id, "ticket_assigned", "",  new_agent_email);
+    }
     await funcs.addSystemLog(ticket_id, `Agent changed to ${new_agent_name}.`)
     res.redirect(`/dashboard/${ticket_id}`);
 });
@@ -262,9 +302,12 @@ router.get("/agentPanel", isAuthenticated, ensureAgentOrAdmin, async (req, res) 
     let data = {
         title: "Agent Panel",
         user,
-        reopen_requests: await funcs.getRequestsReopenTicket(user.id),
+        reopen_requests: await funcs.getRequestsReopenTicket(user.id, req.session.roles[0]),
         user_creation_requests: await funcs.getRequestsCreateUser(),
-        role: req.session.roles[0]
+        role: req.session.roles[0],
+        tickets: await funcs.getTickets(),
+        categories: await funcs.getCategories(),
+        update_tickets: await funcs.getTicketsNotification()
     };
 
     res.render("agent_panel", data);
@@ -288,12 +331,43 @@ router.post("/agentPanel/denyCreateUser", isAuthenticated, ensureAgentOrAdmin, a
     res.redirect(`/agentPanel`);
 });
 
+router.post("/agentPanel/deleteCategory", isAuthenticated, ensureAgentOrAdmin, async (req, res) => {
+    const { id } = req.body;
+    await funcs.deleteCategory(id);
+    res.redirect(`/agentPanel`);
+});
+
+// router.post("/agentPanel/changeFileSize", isAuthenticated, ensureAgentOrAdmin, async (req, res) => {
+//     const { new_size } = req.body;
+//     fs.readFile("../config/config.json", 'utf8', (err, data) => {
+//         if (err) {
+//             return res.status(500).json({ error: 'Failed to read JSON file' });
+//         }
+
+//         const json_data = JSON.parse(data);
+
+//         json_data.Multer.MAX_FILE_SIZE_MB = newSize;
+
+//         fs.writeFile(filePath, JSON.stringify(json_data, null, 2), (err) => {
+//             if (err) {
+//                 return res.status(500).json({ error: 'Failed to write to JSON file' });
+//             }
+//             res.json(json_data);
+//         });
+//     });
+//     res.redirect(`/agentPanel`);
+// });
+
 router.get("/knowledgeBoard", isAuthenticated, ensureAgentOrAdmin, async (req, res) => {
     let data = {
         title: "Agent Panel",
         user: req.user,
         posts: await funcs.getKnowledgeBoardPosts(),
-        categories: await funcs.getCategories()
+        categories: await funcs.getCategories(),
+        role:  req.session.roles[0],
+        tickets: await funcs.getTickets(),
+        update_tickets: await funcs.getTicketsNotification(),
+        role: req.session.roles[0]
     };
 
     res.render("knowledge_board", data);
@@ -301,10 +375,8 @@ router.get("/knowledgeBoard", isAuthenticated, ensureAgentOrAdmin, async (req, r
 
 router.post("/knowledgeBoard/newPost", isAuthenticated, ensureAgentOrAdmin, async (req, res) => {
     const { author, content, category } = req.body;
-    console.log(category)
     await funcs.newKnowledgeBoardPost(author, content, category);
     res.redirect(`/knowledgeBoard`);
 });
-
 
 module.exports = router;

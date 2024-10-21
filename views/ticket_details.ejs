@@ -1,4 +1,4 @@
-<%- include("header", {title: title}); %>
+<title><%= title %></title>
 <link rel="stylesheet" href="/style/ticket_details.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -7,83 +7,117 @@
     <div id="main_view">
         <nav id="navbar">
             <h1 id="navbar_title">Ticket System</h1>
-
-            <h3>Logged in as: <%= user.displayName %></h3>
+            <div class="header_divider"></div>
+            <h3><%= user.displayName %> (<%= role %>)</h3>
         </nav>
         
         <div id="main_container">
             <div id="sidebar">
                 <div id="sidebar_navigation">
-                    <button class="sidebar_button" onclick="window.location='/dashboard'"><i class="material-icons">dashboard</i>DASHBOARD</button>
+                    <button class="sidebar_button" onclick="window.location='/dashboard'"><span class="material-symbols-outlined">view_list</span>TICKETS</button>
                     <button class="sidebar_button" onclick="window.location='/knowledgeBoard'"><i class="material-icons">auto_stories</i>BOARD</button>
                     <button class="sidebar_button" onclick="window.location='/agentPanel'"><i class="material-icons">admin_panel_settings</i>AGENTS</button>
                 </div>
                 
                 <button id="logout_button" onclick="window.location='/logout'">Logout <i class="fa fa-sign-out"></i></button>
             </div>
-
             <div id="floating_container">
                 <div id="container_header">
-                    <h1 id="title"><%= ticket.title %></h1>
-
+                    <div id="header_left">
+                        <h2>#<%= ticket.id %></h2>
+                        <div class="header_divider"></div>
+                        <h1 id="title"><%= ticket.title %></h1>
+                        <div id="full_title"><%= ticket.title %></div>
+                    </div>
                     <div id="buttons_container">
-                        <% if (!ticket.closed_at && ((role == "Agent" && ticket.agent_id == user.id) || role == "User")) { %>
+                        <% if (role == "Super Admin" && !ticket.closed_at) { %>
+                            <select id="selected_agent" onchange="changeAgent()">
+                                <option value="" disabled selected>Change Agent</option>
+                                <% for( let i = 0; i < agents.length; i++ ) { %>
+                                    <% if (ticket.agent_name == agents[i].name) { %>
+                                        <option value="<%= i %>" disabled class="selected_option"> <%= agents[i].name %> </option>
+                                    <% } else {%>
+                                        <option value="<%= i %>"> <%= agents[i].name %> </option>
+                                    <% } %>
+                                <% } %>
+                            </select>
+                            <div class="header_divider"></div>
+                        <% } %>
+                        
+                        <% if (!ticket.closed_at && (((role == "Agent" || role == "Super Admin") && ticket.agent_id == user.id) || role == "User")) { %>
                             <% if (role != "User") { %>
                                 <select id="selected_category" onchange="changeCategory()">
-                                    <option value="" disabled selected><%= ticket.category_name ? ticket.category_name : "None Assigned"%></option>
+                                    <option disabled selected>Change Category</option>
                                     <% for(i = 0; i < categories.length; i++) { %>
-                                        <option value="<%= categories[i].id %>"> <%= categories[i].name %> </option>
+                                        <% if (ticket.category_name == categories[i].name) { %>
+                                            <option value="<%= categories[i].id %>" disabled class="selected_option"> <%= categories[i].name %> </option>
+                                        <% } else {%>
+                                            <option value="<%= categories[i].id %>"> <%= categories[i].name %> </option>
+                                        <% } %>
                                     <% } %>
                                 </select>
+                                <div class="header_divider"></div>
                             <% } %>
 
                             <form action="/dashboard/<%= ticket.id %>/closeTicket" method="post">
-                                <button id="close_ticket" type="submit" onclick="return confirm('Are you sure you want to close the ticket?');">Close Ticket</button>
+                                <button id="close_ticket" type="submit" onclick="return confirm('Are you sure you want to close the ticket?');"><span class="material-symbols-outlined">cancel</span></button>
                             </form>
+                            <div class="header_divider"></div>
 
-                            <button id="new_comment">+</button>
+                            <button id="new_comment"><span class="material-symbols-outlined">add_comment</span></button>
                         <% } %>
-
-                        <% if (role == "Agent" && !ticket.agent_id && !ticket.closed_at) { %>
+                        
+                        <% if ((role == "Agent" || role == "Super Admin") && !ticket.agent_id && !ticket.closed_at) { %>
                             <form action="/dashboard/<%= ticket.id %>/claimTicket" method="post">
                                 <button id="claim_button" type="submit">Claim</button>
                             </form>
+                            <div class="header_divider"></div>
                         <% } %>
 
                         <% if (role == "User" && ticket.closed_at && !ticket.reopen_requested && ticket.agent_id) { %>
                             <form action="/dashboard/<%= ticket.id %>/requestReopenTicket" method="post">
                                 <button id="reopen_button" type="submit" onclick="return confirm('Are you sure you want to request a reopening of this ticket?');">Reopen Ticket</button>
                             </form>
+                            <div class="header_divider"></div>
                         <% } %>
                         
-                        <% if (role == "Agent" && ticket.reopen_requested && ticket.agent_id == user.id) { %>
+                        <% if (((role == "Agent" && ticket.agent_id == user.id) || role == "Super Admin") && ticket.reopen_requested) { %>
                             <form action="/dashboard/<%= ticket.id %>/acceptReopenTicket" method="post">
                                 <button id="accept_button" type="submit" onclick="return confirm('Are you sure you want to reopen this ticket?');">Accept Request</button>
                             </form>
-                        <% } %>
-
-                        <% if (role == "Super Admin") { %>
-                            <select id="selected_agent" onchange="changeAgent()">
-                                <option value="" disabled selected><%= ticket.agent_name ? ticket.agent_name : "None Assigned"%></option>
-                                <% for( let i = 0; i < agents.length; i++ ) { %>
-                                    <option value="<%= i %>"><%= agents[i].name %></option>
-                                <% } %>
-                            </select>
+                            <div class="header_divider"></div>
+                            <form action="/dashboard/<%= ticket.id %>/denyReopenTicket" method="post">
+                                <button id="deny_button" type="submit" onclick="return confirm('Are you sure you want to deny a reopening of this ticket?');">Deny Request</button>
+                            </form>
                         <% } %>
                     </div>
                 </div>
 
                 <div id="details_container">
-                    <div id = description_container><%= ticket.description %></div>
+                    <div id="description_container">
+                        <h4>Issue:</h4>
+                        <div id = "description">
+                            <% if (ticket.description.includes("\n")) { %>
+                             <pre><%= ticket.description %></pre>
+                            <% } else {%>
+                                <div><%= ticket.description %></div>
+                            <% } %>
+                        </div>
+                    </div>
 
-                    <div id="attachments">
-                        <table id="attachments_table">
+                    <div class="horizontal_divider"></div>
+
+                    <div id="attachments_container">
+                        <h4>Files:</h4>
+                        <div id="attachments">
                             <% for( let i = 0; i < files.length; i++ ) { %>
-                                <tr>
-                                    <td>
-                                        <%= files[i].path.split("-")[1] %>
-                                    </td>
-                                    <td>
+                                <div class="attachment">
+                                    <div>
+                                        <% let index = files[i].path.indexOf("-"); %>
+                                        <% let name = files[i].path.substring(index + 1); %>
+                                        <%= name %>
+                                    </div>
+                                    <div>
                                         <% if (files[i].path.endsWith('.pdf')) { %>
                                             <a href="/uploads/<%= files[i].path %>" target="_blank">
                                                 <i class="fa fa-file-pdf-o" style="font-size:48px;color:red"></i>
@@ -91,19 +125,21 @@
                                         <% } else { %>
                                             <img class="attachment_image" src="/uploads/<%= files[i].path %>" onclick="openImageModal('<%= files[i].path %>')">
                                         <% } %>
-                                    </td>
-                                    <td>
+                                    </div>
+                                    <div>
                                         <a href="/uploads/<%= files[i].path %>" download>
                                             <span class="material-symbols-outlined">
                                                 download
                                             </span>
                                         </a>
-                                    </td>
-                                </tr>
+                                    </div>
+                                </div>
                             <% } %>
-                        </table>
+                        </div>
                     </div>
                 </div>
+
+                <div class="horizontal_divider"></div>
 
                 <div id="comments_container">
                     <div class="comment">
@@ -135,7 +171,11 @@
                             </div>
     
                             <div class="comment_text">
-                                <%= logs[i].comment %>
+                                <% if (logs[i].comment.includes("\n")) { %>
+                                    <pre><%= logs[i].comment %></pre>
+                                <% } else {%>
+                                    <%= logs[i].comment %>
+                                <% } %>
                             </div>
                         </div>
                     <% } %>    
@@ -145,34 +185,30 @@
             <% if (role != "User") { %>
                 <div id="knowledge_hub_container">
                     <% if (posts.length > 0) { %>
-                        <% for( let i = 0; i < Math.min(2, posts.length); i++ ) { %>
+                        <% for( let i = posts.length - 1; i >= 0; i-- ) { %>
                             <div class="post_recommendation">
                                 <div class="post_header">
                                     <a><%= posts[i].author_name %></a>
+                                    <button id="comment_post" onclick="return confirm('Do you want to create a comment from this post?') && comment(<%= JSON.stringify(posts[i].content) %>);"><span class="material-symbols-outlined">add_comment</span></button>
                                 </div>
                                 <div class="post_content"><%= posts[i].content %></div>
                             </div>
-                        <% } %>
-                        <% if (posts.length > 3) { %>
-                            <h4 style="margin-left: 10px;">And <%= posts.length - 3 %> more posts...</h4>
                         <% } %>
                     <% } else {%>
                         <h3>There are no posts about this category...</h3>
                     <% } %>
                 </div>
             <% } %>
-        </div>
+            </div>
 
-        <div id="my_modal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-
+        <div id="ticket_modal" class="modal">
+            <div class="modal-content" id="ticket_modal_content">
                 <form action="/dashboard/<%= ticket.id %>/comment" method="post">
                     <div id="modal_container">
                         <textarea id="comment" name="comment" rows="10" cols="40" placeholder="Write a comment..." required maxlength="2000"></textarea>
                         <input type="hidden" name="author" value="<%= user.displayName %>">
 
-                        <button type="submit">Create Comment</button>
+                        <button type="submit">Post Comment</button>
                     </div>
                 </form>
             </div>
@@ -187,8 +223,10 @@
     const ticket = <%- JSON.stringify(ticket) %>;
     const user = <%- JSON.stringify(user) %>;
     const role = <%- JSON.stringify(role) %>;
+    const files = <%- JSON.stringify(files) %>;
+    const tickets = <%- JSON.stringify(tickets) %>;
+    const update_tickets = <%- JSON.stringify(update_tickets) %>;
 </script>
 
 <script src="/scripts/ticket_details.js"></script>
 
-<%- include("footer"); %>

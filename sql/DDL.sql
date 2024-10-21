@@ -29,14 +29,17 @@ CREATE TABLE IF NOT EXISTS `TicketSystem`.`Tickets` (
   `agent_id` VARCHAR(45) NULL,
   `agent_name` VARCHAR(100) NULL,
   `agent_email` VARCHAR(100) NULL,
-  `author_id` VARCHAR(45) NOT NULL,
+  `author_id` VARCHAR(45) NULL,
   `author_name` VARCHAR(100) NOT NULL,
   `author_email` VARCHAR(100) NOT NULL,
   `description` VARCHAR(5000) NULL,
   `opened_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL,
   `closed_at` TIMESTAMP NULL,
   `reopen_requested` BOOLEAN DEFAULT FALSE,
+  `unread_agent` BOOLEAN DEFAULT FALSE,
+  `unread_user` BOOLEAN DEFAULT FALSE,
+  `notification_sent` BOOLEAN DEFAULT FALSE,
   PRIMARY KEY (`id`),
     FOREIGN KEY (`category_id`)
     REFERENCES `TicketSystem`.`Categories` (`id`)
@@ -65,7 +68,7 @@ DROP TABLE IF EXISTS `TicketSystem`.`Requests_create_user` ;
 
 CREATE TABLE IF NOT EXISTS `TicketSystem`.`Requests_create_user` (
   `user_email` VARCHAR(100) NOT NULL,
-  `user_message` VARCHAR(5000) NOT NULL, 
+  `requested_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
   PRIMARY KEY (`user_email`))
 ENGINE = InnoDB;
 
@@ -91,7 +94,7 @@ CREATE TABLE IF NOT EXISTS `TicketSystem`.`Logs` (
   `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `comment` VARCHAR(2000) NOT NULL,
   `author` VARCHAR(50),
-  `notification_sent` BOOLEAN DEFAULT FALSE,
+  `author_role` VARCHAR(50),
   PRIMARY KEY (`log_id`),
     FOREIGN KEY (`ticket_id`)
     REFERENCES `TicketSystem`.`Tickets` (`id`)
@@ -125,7 +128,7 @@ CREATE TABLE IF NOT EXISTS `TicketSystem`.`Knowledge_board` (
   `author_name` VARCHAR(100) NOT NULL,
   `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `content` VARCHAR(3000) NOT NULL,
-  `category` INT NOT NULL,
+  `category` INT NULL,
   PRIMARY KEY (`id`),
     FOREIGN KEY (`category`)
     REFERENCES `TicketSystem`.`Categories` (`id`)
@@ -158,7 +161,10 @@ CREATE VIEW v_tickets AS
         t.agent_id,
         t.agent_name,
         t.agent_email,
-        t.reopen_requested
+        t.reopen_requested,
+        t.unread_agent,
+        t.unread_user,
+        t.notification_sent
     FROM 
         Tickets AS t
     LEFT JOIN 
@@ -174,11 +180,21 @@ CREATE VIEW v_logs AS
       ticket_id,
       log_id,
       author,
+      author_role,
       comment,
-      DATE_FORMAT(`timestamp`, '%Y-%m-%d %H:%i:%s') AS formatted_timestamp,
-      notification_sent
+      DATE_FORMAT(`timestamp`, '%Y-%m-%d %H:%i:%s') AS formatted_timestamp
     FROM
       Logs;
+
+
+DROP VIEW IF EXISTS v_requests_create_user;
+
+CREATE VIEW v_requests_create_user AS 
+    SELECT
+      user_email,
+      DATE_FORMAT(`requested_at`, '%Y-%m-%d %H:%i:%s') AS formatted_requested_at
+    FROM
+      Requests_create_user;
 
 
 DROP VIEW IF EXISTS v_requests_reopen_ticket;
@@ -218,7 +234,6 @@ CREATE VIEW v_knowledge_board AS
 --
 
 DELIMITER ;;
-
 CREATE TRIGGER update_ticket_timestamp
 AFTER INSERT ON Logs
 FOR EACH ROW
@@ -227,7 +242,18 @@ BEGIN
     SET updated_at = CURRENT_TIMESTAMP
     WHERE id = NEW.ticket_id;
 END;;
+DELIMITER ;
 
+
+DELIMITER ;;
+CREATE TRIGGER update_ticket
+BEFORE UPDATE ON Tickets
+FOR EACH ROW
+BEGIN
+    IF NEW.category_id IS NOT NULL THEN
+        SET NEW.updated_at = CURRENT_TIMESTAMP;
+    END IF;
+END;;
 DELIMITER ;
 
 
@@ -249,6 +275,15 @@ DELIMITER ;;
 CREATE PROCEDURE get_open_tickets()
 BEGIN
   SELECT * FROM v_tickets WHERE closed_at IS NULL;
+END;;
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS get_tickets_notification;
+DELIMITER ;;
+CREATE PROCEDURE get_tickets_notification()
+BEGIN
+  SELECT * FROM v_tickets WHERE notification_sent = TRUE;
 END;;
 DELIMITER ;
 
@@ -339,9 +374,27 @@ DELIMITER ;
 
 DROP PROCEDURE IF EXISTS new_comment;
 DELIMITER ;;
-CREATE PROCEDURE new_comment(p_ticket_id INT, p_author VARCHAR(50), p_comment VARCHAR(2000))
+CREATE PROCEDURE new_comment(p_ticket_id INT, p_author VARCHAR(50), p_comment VARCHAR(2000), p_role VARCHAR(50))
 BEGIN
-  INSERT INTO Logs(ticket_id, author, comment) VALUES (p_ticket_id, p_author, p_comment);
+  INSERT INTO Logs(ticket_id, author, comment, author_role) VALUES (p_ticket_id, p_author, p_comment, p_role);
+END;;
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS set_unread_agent;
+DELIMITER ;;
+CREATE PROCEDURE set_unread_agent(p_ticket_id INT, p_event BOOLEAN)
+BEGIN
+  UPDATE Tickets SET unread_agent = p_event WHERE id = p_ticket_id;
+END;;
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS set_unread_user;
+DELIMITER ;;
+CREATE PROCEDURE set_unread_user(p_ticket_id INT, p_event BOOLEAN)
+BEGIN
+  UPDATE Tickets SET unread_user = p_event WHERE id = p_ticket_id;
 END;;
 DELIMITER ;
 
@@ -384,6 +437,16 @@ END;;
 DELIMITER ;
 
 
+DROP PROCEDURE IF EXISTS deny_reopen_ticket;
+DELIMITER ;;
+CREATE PROCEDURE deny_reopen_ticket(p_ticket_id INT)
+BEGIN
+  UPDATE Tickets SET reopen_requested = FALSE WHERE id = p_ticket_id;
+  DELETE FROM Requests_reopen_ticket WHERE ticket_id = p_ticket_id;
+END;;
+DELIMITER ;
+
+
 DROP PROCEDURE IF EXISTS get_requests_reopen_ticket;
 DELIMITER ;;
 CREATE PROCEDURE get_requests_reopen_ticket(p_agent_id VARCHAR(45))
@@ -392,12 +455,20 @@ BEGIN
 END;;
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS get_all_requests_reopen_ticket;
+DELIMITER ;;
+CREATE PROCEDURE get_all_requests_reopen_ticket()
+BEGIN
+  SELECT * FROM v_requests_reopen_ticket;
+END;;
+DELIMITER ;
+
 
 DROP PROCEDURE IF EXISTS request_create_user;
 DELIMITER ;;
-CREATE PROCEDURE request_create_user(p_user_email VARCHAR(100), p_user_message VARCHAR(5000))
+CREATE PROCEDURE request_create_user(p_user_email VARCHAR(100))
 BEGIN
-  INSERT INTO Requests_create_user (user_email, user_message) VALUES (p_user_email, p_user_message);
+  INSERT INTO Requests_create_user (user_email) VALUES (p_user_email);
 END;;
 DELIMITER ;
 
@@ -406,7 +477,7 @@ DROP PROCEDURE IF EXISTS get_requests_create_user;
 DELIMITER ;;
 CREATE PROCEDURE get_requests_create_user()
 BEGIN
-  SELECT * FROM Requests_create_user;
+  SELECT * FROM v_requests_create_user;
 END;;
 DELIMITER ;
 
@@ -464,14 +535,24 @@ BEGIN
 END;;
 DELIMITER ;
 
-DROP PROCEDURE IF EXISTS get_knowledge_board_posts_by_category;
+
+DROP PROCEDURE IF EXISTS delete_category;
 DELIMITER ;;
-CREATE PROCEDURE get_knowledge_board_posts_by_category(p_category VARCHAR(50))
+CREATE PROCEDURE delete_category(p_id INT)
 BEGIN
-  SELECT * FROM v_knowledge_board WHERE category = p_category;
+  UPDATE Tickets SET  category_id = NULL WHERE category_id = p_id;
+  UPDATE Knowledge_board  SET category = NULL WHERE category = p_id;
+  DELETE FROM Categories WHERE id = p_id;
 END;;
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS update_tickets_first_login;
+DELIMITER ;;
+CREATE PROCEDURE update_tickets_first_login(p_author_name VARCHAR(100), p_author_email VARCHAR(100), p_author_id VARCHAR(45))
+BEGIN
+  UPDATE Tickets SET author_name = p_author_name, author_id = p_author_id WHERE author_name = p_author_email;
+END;;
+DELIMITER ;
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;

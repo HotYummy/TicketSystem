@@ -1,15 +1,9 @@
 const modal = document.getElementById("my_modal");
 const new_ticket_button = document.getElementById("new_ticket");
-const close_buttons = document.getElementsByClassName("close");
 
 // Open the modal when the new ticket button is clicked
 new_ticket_button.onclick = function() {
   modal.style.display = "block";
-};
-
-// Close the modal when the close button is clicked
-close_buttons[0].onclick = function() {
-  modal.style.display = "none";
 };
 
 // Close the modal if the user clicks anywhere outside it
@@ -24,12 +18,18 @@ document.getElementById('searchbar').addEventListener('input', function() {
   const search_query = this.value.toLowerCase();
   const rows = document.querySelectorAll('#ticket_table tbody tr');
 
+  // // First, filter the posts based on current filters
+  filterTickets();
+
   rows.forEach(row => {
-    const cells = row.querySelectorAll('td');
-    const row_contains_query = Array.from(cells).some(cell =>
-      cell.textContent.toLowerCase().includes(search_query)
-    );
-    row.style.display = row_contains_query ? '' : 'none';
+    // Check if the row is visible after filtering
+    if (row.style.display !== 'none') {
+      const cells = row.querySelectorAll('td');
+      const row_contains_query = Array.from(cells).some(cell =>
+        cell.textContent.toLowerCase().includes(search_query)
+      );
+      row.style.display = row_contains_query ? '' : 'none';
+    }
   });
 });
 
@@ -150,6 +150,11 @@ if (role === "Agent" || role === "Super Admin") {
   view_title.textContent = "Recent Tickets";
 } else {
   view_title.textContent = "My Tickets";
+  const sidebar_buttons = document.getElementsByClassName("sidebar_button");
+  sidebar_buttons[1].style.color = "grey";
+  sidebar_buttons[1].disabled = true;
+  sidebar_buttons[2].style.color = "grey";
+  sidebar_buttons[2].disabled = true;
 }
 
 // Toggle the filter box
@@ -169,12 +174,16 @@ document.getElementById("filter_button").addEventListener("click", function() {
 });
 
 // Filtering functionality for category and status
+//
 function filterTickets() {
   const selected_categories = Array.from(document.querySelectorAll("#filter_category input[type='checkbox']:checked"))
     .map(checkbox => checkbox.value);
 
   const selected_statuses = Array.from(document.querySelectorAll("#filter_status input[type='checkbox']:checked"))
     .map(checkbox => checkbox.value);
+
+  const selected_assignments = Array.from(document.querySelectorAll("#filter_assignment input[type='checkbox']:checked"))
+    .map(checkbox => checkbox.name); 
 
   const rows = document.querySelectorAll("#ticket_table tbody tr");
 
@@ -185,14 +194,36 @@ function filterTickets() {
     const status_cell = row.querySelector("td.status");
     const status_value = status_cell ? status_cell.textContent.trim() : '';
 
+    const assignment_cell = row.querySelector("td#agent"); 
+    const assignment_value = assignment_cell ? assignment_cell.textContent.trim() : '';
+
     const category_matches = selected_categories.length === 0 || selected_categories.includes(category_value);
     const status_matches = selected_statuses.length === 0 || selected_statuses.includes(status_value);
 
-    row.style.display = (category_matches && status_matches) ? "" : "none";
+    
+    let assignment_matches = true; 
+
+    if (selected_assignments.length === 1) {
+      
+      if (selected_assignments.includes("me")) {
+        assignment_matches = assignment_value.includes("Me");
+      }
+      
+      else if (selected_assignments.includes("other")) {
+        assignment_matches = !assignment_value.includes("Me");
+      }
+    }
+    
+    else if (selected_assignments.length === 0 || selected_assignments.length === 2) {
+      assignment_matches = true; 
+    }
+
+    
+    row.style.display = (category_matches && status_matches && assignment_matches) ? "" : "none";
   });
 }
 
-// Event listeners for category and status filtering
+
 document.querySelectorAll("#filter_category input[type='checkbox']").forEach(checkbox => {
   checkbox.addEventListener("change", filterTickets);
 });
@@ -201,61 +232,43 @@ document.querySelectorAll("#filter_status input[type='checkbox']").forEach(check
   checkbox.addEventListener("change", filterTickets);
 });
 
+document.querySelectorAll("#filter_assignment input[type='checkbox']").forEach(checkbox => {
+  checkbox.addEventListener("change", filterTickets);
+});
 
-// let selectedFiles = [];
 
-// // Handle file input selection
-// document.getElementById("file_input").addEventListener("change", function(event) {
-//     let files = event.target.files;
-    
-//     // Add selected files to the selectedFiles array
-//     for (let i = 0; i < files.length; i++) {
-//         selectedFiles.push(files[i]);
-//     }
+if (ticket_created) {
+  const confirmation = document.getElementById("confirmation");
+  confirmation.innerText = "Ticket Opened";
+  confirmation.style.bottom = "100px";
+  setTimeout(() => {
+    confirmation.style.bottom = "-100px";
+  }, 3000);
+}
 
-//     // Display selected files in the file list
-//     displaySelectedFiles();
-// });
+if (ticket_closed) {
+  const confirmation = document.getElementById("confirmation");
+  confirmation.innerText = "Ticket Closed";
+  confirmation.style.bottom = "100px";
+  setTimeout(() => {
+    confirmation.style.bottom = "-100px";
+  }, 3000);
+}
 
-// function displaySelectedFiles() {
-//     let fileList = document.getElementById("file_list");
-//     fileList.innerHTML = ""; // Clear the list before displaying updated selection
+let notif = false;
+let i = 0;
 
-//     selectedFiles.forEach((file, index) => {
-//         let li = document.createElement("li");
-//         li.textContent = file.name + " (" + (file.size / 1024).toFixed(2) + " KB)";
-//         fileList.appendChild(li);
-//     });
-// }
+while(notif == false && i < tickets.length){
+  if((tickets[i].unread_agent && tickets[i].agent_name == user.displayName && role != "User") || (tickets[i].unread_user && role == "User")){
+    notif = true;
+  }
+  i++;
+}
 
-// document.getElementById("create_ticket_button").addEventListener("click", function () {
-//   let fileForm = document.getElementById("file_upload_form");
-//   let ticketForm = document.getElementById("ticket_form");
+if(notif == true){
+  document.getElementsByClassName("sidebar_button")[0].innerHTML += '<span class="material-symbols-outlined">notifications</span>'
+}
 
-//   // Create a FormData object to handle the files and forms data
-//   let formData = new FormData(fileForm);
-
-//   // Append form data (e.g., file inputs) to FormData
-//   selectedFiles.forEach(file => {
-//       formData.append('mypics', file);
-//   });
-
-//   // Perform the file upload using fetch API
-//   fetch('/uploadFiles', {
-//       method: 'POST',
-//       body: formData
-//   })
-//   .then(response => response.json()) // Parse the JSON response
-//   .then(result => {
-//       if (result.success) {
-//           // File upload was successful, now submit the ticket form
-//           alert(result.message);
-//           ticketForm.submit(); // Submit the ticket form after upload success
-//       } else {
-//           alert("File upload failed: " + result.message);
-//       }
-//   })
-//   .catch(error => {
-//       console.error("Error during file upload:", error);
-//   });
-// });
+if(role == "Super Admin" && update_tickets.length > 0){
+  document.getElementsByClassName("sidebar_button")[2].innerHTML += `<div id="update_amount">(${update_tickets.length})</div>`
+}

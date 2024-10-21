@@ -12,6 +12,7 @@ body{
   background: linear-gradient(90deg, rgba(202,215, 253, 1) 0%, rgb(235, 240, 255) 50%);
     padding: 0;
     margin: 0;
+  overflow-y: hidden;
 }
 
 ::-webkit-scrollbar {
@@ -44,17 +45,93 @@ body{
     overflow: auto;
     background-color: rgb(0,0,0);
     background-color: rgba(0,0,0,0.4);
-  }
-  
-  #modal_content{
-    display: flex;
-    justify-content: space-between;
-    padding: 20px;
+    align-items: center;
+    justify-content: center;
   }
 
-  #description_container,
+  .modal-content {
+    position: relative;
+    background-color: #fefefe;
+    margin: 12% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%;
+    height: 35%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    animation-name: animatetop;
+    animation-duration: 0.4s;
+    border-radius: 10px;
+  }
+
+  .modal form{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+
   #extras_container {
-      width: 48%;
+    display: flex;
+    width: 50%;
+    flex-direction: column;
+    justify-content: space-evenly;
+    height: 100%;
+}
+
+#category_and_files{
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+#choose_category{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  width: 50%;
+}
+
+#attachments{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  width: 50%;
+}
+
+#category_select, #file_input {
+  width: 90%;
+}
+
+#extras_container select, 
+#extras_container form {
+    margin-top: 15px;
+}
+
+#button_container{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+#button_container button{
+  height: 40px;
+  width: 50%;
+  border-radius: 8px;
+  background-color: #5500cb;
+  color: white;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+}
+
+#description_container{
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    height: 100%;
   }
 
   #description{
@@ -66,50 +143,14 @@ body{
     resize: none;
   }
 
-  #description_container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
   #description_container textarea {
     width: 100%;
     box-sizing: border-box;
   }
 
-  #extras_container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-
-  #extras_container select, 
-  #extras_container button, 
-  #extras_container form {
-      margin-top: 15px;
-  }
-
-  #category_select{
-    width: 32%;
-  }
-
   #title_create{
-    width: 59%;
+    width: 100%;
     margin-bottom: 15px;
-  }
-
-  .modal-content {
-    position: relative;
-    background-color: #fefefe;
-    margin: 12% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 50%;
-    height: 40%;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
-    animation-name: animatetop;
-    animation-duration: 0.4s;
-    border-radius: 10px;
   }
 
   .close {
@@ -158,18 +199,25 @@ body{
     to {top: 0; opacity: 1}
   }
 
-#navbar{
-    width: 100vw;
-    height: 5vh;
-    background-color: #fafaff;
-    box-shadow: 1px 1px 15px rgb(202, 215, 253);
-    z-index: 100;
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-  }
+/* Navbar layout */
+#navbar {
+  width: 100vw;
+  height: 5vh;
+  background-color: #fafaff;
+  box-shadow: 1px 1px 15px rgb(202, 215, 253);
+  z-index: 100;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.header_divider{
+  height: 35px;
+  width: 2px;
+  background-color: rgba(0, 20, 151, 0.59);
+  margin: 0 10px;
+}
 
   #navbar_title{
     font-size: 27px;
@@ -185,12 +233,16 @@ body{
   }
 
   #floating_container{
-    width: 80%;
-    margin: 3%;
+    width: 100%;
+    height: 85vh;
+    margin: 2.5%;
     padding: 20px;
-    background-color: #fafaff;
+    background-color: white;
     border-radius: 40px;
     box-shadow: -1px 5px 12px 15px rgb(202, 215, 253);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 
   #scrollable{
@@ -223,12 +275,21 @@ body{
     color: white;
   }
 
+  #unread_ticket
+
   th, td {
     padding: 12px;
     max-height: 50px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+  }
+
+  th {
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 1;
   }
 
   th:hover{
@@ -238,6 +299,19 @@ body{
   #status_open{
     padding: 5px;
     background-color: rgb(255, 0, 0);
+    border-radius: 5px;
+    font-size: 14px;
+    letter-spacing: 0px;
+    font-weight: 600;
+    width: 100px;
+    text-align: center;
+    color: white;
+    border-radius: 4px;
+  }
+
+  #status_update{
+    padding: 5px;
+    background-color: rgb(0, 102, 255);
     border-radius: 5px;
     font-size: 14px;
     letter-spacing: 0px;
@@ -310,7 +384,7 @@ body{
 
     #filter_button{
       height: 35px;
-      width: 80px;
+      width: 50px;
       border-radius: 8px;
       background-color: #5500cb;
       color: white;
@@ -329,8 +403,8 @@ body{
     
     #filter_box_container {
       position: relative;
-      width: 400px;
-      height: 200px;
+      width: 500px;
+      height: 250px;
       overflow: hidden; /* Ensures the box stays within the container */
       background-color: none;
       border-radius: 10px;
@@ -380,6 +454,7 @@ body{
             width: 2px;
             height: 100%;
             background-color: #aaa;
+            margin: 1%;
           }
         
           .checkbox_list {
@@ -413,7 +488,7 @@ body{
     }
 
 #sidebar{
-    width: 10%;
+    width: 11%;
     height: 95vh;
     background-color: #ffffff;
     display: flex;
@@ -445,6 +520,10 @@ body{
     margin-right: 10px;
   }
 
+  .sidebar_button span.material-symbols-outlined {
+    margin-right: 10px;
+  }
+
   #sidebar_selected{
     background-color: #5500cb;
     color: white;
@@ -469,3 +548,32 @@ body{
       cursor: pointer;
       transition: background-color 0.2s easy;
     }
+
+    
+#confirmation {
+  position: absolute;
+  z-index: 1000;
+  left: calc(50% - 100px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  bottom: -100px;
+  height: 50px;
+  width: 200px;
+  background-color: #5cb85c;
+  transition: bottom 0.5s ease;
+  border-radius: 10px;
+  font-size: 18px;
+  color: white
+}
+
+.horizontal_divider{
+  width: 100%;
+  height: 2px;
+  background-color: #aaa;
+  margin: 1%;
+}
+
+#update_amount{
+  margin-left: 5%;
+}

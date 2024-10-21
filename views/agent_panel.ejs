@@ -1,5 +1,5 @@
-<%- include("header", {title: title}); %>
-<link rel="stylesheet" href="/style/agent_panel.css">
+<title><%= title %></title>
+<link rel="stylesheet" href="/style/agent_panel.css?">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -7,14 +7,14 @@
     <div id="main_view">
         <nav id="navbar">
             <h1 id="navbar_title">Ticket System</h1>
-
-            <h3>Logged in as: <%= user.displayName %></h3>
+            <div class="header_divider"></div>
+            <h3><%= user.displayName %> (<%= role %>)</h3>
         </nav>
         
         <div id="main_container">
             <div id="sidebar">
                 <div id="sidebar_navigation">
-                    <button class="sidebar_button" onclick="window.location='/dashboard'"><i class="material-icons">dashboard</i>DASHBOARD</button>
+                    <button class="sidebar_button" onclick="window.location='/dashboard'"><span class="material-symbols-outlined">view_list</span>TICKETS</button>
                     <button class="sidebar_button" onclick="window.location='/knowledgeBoard'"><i class="material-icons">auto_stories</i>BOARD</button>
                     <button class="sidebar_button" id="sidebar_selected"><i class="material-icons">admin_panel_settings</i>AGENTS</button>
                 </div>
@@ -23,90 +23,263 @@
             </div>
 
             <div id="floating_container">
-                <div id="creation_container">
-                    <div id="category_creation">
-                        <form id="new_category" action="/dashboard/createCategory" method="post">
-                            <input id="category_name" name="category_name" placeholder="Add a new category..." required maxlength="50">
-
-                            <button id="new_category_button" type="submit">Create</button>
-                        </form>
-                    </div>
-
-                    <form action="/agentPanel/createUser" method="post">
-                        <div id="user_creation">
-                            <label for="name">Name</label>
-                            <input name="name" required maxlength="100">
-
-                            <label for="email">Email</label>
-                            <input name="email" required maxlength="100" type="email">
-
-                            <label for="password">Password</label>
-                            <input name="password" required maxlength="100" type="password">
-
-                            <select name="role">
-                                <option value="rol_n3r9Bk6sdCqkN5XN">User</option>
-                                <% if (role == "Super Admin") { %>
-                                    <option value="rol_O69N7QGMEMtlMDhZ">Agent</option>
-                                <% } %>
-                            </select>
-
-                            <button type="submit">Create</button>
-                        </div>
-                    </form>
+                <div id="container_header">
+                    <h1 id="view_title">Admin Panel</h1>
+                    <div class="agent_nav_button" onclick="changeView(0)"><span class="material-symbols-outlined">grid_view</span>Dashboard</div>
+                    <div class="agent_nav_button" onclick="changeView(1)"><span class="material-symbols-outlined">person_add</span>Add Users</div>
+                    <div class="agent_nav_button" onclick="changeView(2)"><span class="material-symbols-outlined">category</span>Add Categories</div>
+                    <div class="agent_nav_button" onclick="changeView(3)"><span class="material-symbols-outlined">lock_open</span>Reopen Tickets</div>
+                    <% if (role == "Super Admin") { %>
+                        <div class="agent_nav_button" onclick="changeView(4)"><span class="material-symbols-outlined">notification_important</span>3-Day Notifications</div>
+                    <% } %>
                 </div>
 
-                <div id="requests_container">
-                    <div id="reopen_requests">
-                        <table>
-                            <colgroup>
-                                <col style="width: 30%">
-                                <col style="width: 70%">
-                            </colgroup>
-                            <thead>
-                                <th>Ticket ID</th>
-                                <th>Author</th>
-                            </thead>
-                            <tbody>
-                                <% for(i = 0; i < reopen_requests.length; i++) { %>
-                                    <tr onclick="window.location='/dashboard/<%= i + 1 %>'">
-                                        <td><%= reopen_requests[i].ticket_id %></td>
-                                        <td><%= reopen_requests[i].author_name %></td>
-                                    </tr>
-                                <% } %>
-                            </tbody>
-                        </table>
-                    </div>
+                <div id="dashboard_container">
+                    <div class="info_box_container" id="info_box_1">
+                        <div class="info_box">
+                            <div class="info">Open Tickets</div>
+                            <div class="horizontal_divider"></div>
+                            <div class="info">
+                                <% 
+                                let i = 0;
+                                let open_count = 0;
+                            
+                                while(i < tickets.length) {
+                                    if(!tickets[i].updated_at && !tickets[i].closed_at) {
+                                        open_count++;
+                                    }
+                                    i++;
+                                }
+                                %>
+                                <%= open_count %>
+                            </div>
+                        </div>
+                    </div>          
+                    <div class="info_box_container" id="info_box_2">
+                        <div class="info_box">
+                            <div class="info">Tickets In Progress</div>
+                            <div class="horizontal_divider"></div>
+                            <div class="info">
+                                <% 
+                                i = 0;
+                                in_progress_count = 0;
+                            
+                                while(i < tickets.length) {
+                                    if(tickets[i].updated_at && !tickets[i].closed_at) {
+                                        in_progress_count++;
+                                    }
+                                    i++;
+                                }
+                                %>
+                                <%= in_progress_count %>
+                            </div>
+                        </div>
+                    </div> 
+                    <div class="info_box_container" id="info_box_3">
+                        <div class="info_box">
+                            <div class="info">Resolved Tickets</div>
+                            <div class="horizontal_divider"></div>
+                            <div class="info">
+                                <% 
+                                i = 0;
+                                resolved_count = 0;
+                            
+                                while(i < tickets.length) {
+                                    if(tickets[i].closed_at) {
+                                        resolved_count++;
+                                    }
+                                    i++;
+                                }
+                                %>
+                                <%= resolved_count %>
+                            </div>
+                        </div>
+                    </div> 
+                    <div class="info_box_container" id="info_box_4">
+                        <div class="info_box">
+                            <div class="info">Assigned Tickets</div>
+                            <div class="horizontal_divider"></div>
+                            <div class="info">
+                                <% 
+                                i = 0;
+                                assigned_count = 0;
+                            
+                                while(i < tickets.length) {
+                                    if(tickets[i].agent_name == user.displayName && !tickets[i].closed_at) {
+                                        assigned_count++;
+                                    }
+                                    i++;
+                                }
+                                %>
+                                <%= assigned_count %>
+                            </div>
+                        </div>
+                    </div> 
+                    <div class="info_box_container" id="info_box_5">
+                        <div class="info_box">
+                            <div class="info">New Updates</div>
+                            <div class="horizontal_divider"></div>
+                            <div class="info">
+                                <% 
+                                i = 0;
+                                unread_count = 0;
+                            
+                                while(i < tickets.length) {
+                                    if((tickets[i].agent_name == user.displayName) && (tickets[i].unread_agent)) {
+                                        unread_count++;
+                                    }
+                                    i++;
+                                }
+                                %>
+                                <%= unread_count %>
+                            </div>
+                        </div>
+                    </div> 
+                    <div class="info_box_container" id="info_box_6">
+                        <div class="info_box">
+                            <div class="info">Total Tickets</div>
+                            <div class="horizontal_divider"></div>
+                            <div class="info"><%= tickets.length %></div>
+                        </div>
+                    </div> 
+                </div>
 
-                    <div id="user_creation_requests">
-                        <table>
-                            <colgroup>
-                                <col style="width: 30%">
-                                <col style="width: 70%">
-                            </colgroup>
-                            <thead>
-                                <th>User Mail</th>
-                                <th>Message</th>
-                            </thead>
-                            <tbody>
-                                <% for(i = 0; i < user_creation_requests.length; i++) { %>
-                                    <tr onclick="openUserCreationMenu('<%= user_creation_requests[i].user_email %>')">
-                                        <td><%= user_creation_requests[i].user_email %></td>
-                                        <td><%= user_creation_requests[i].user_message %></td>
-                                    </tr>
-                                <% } %>
-                            </tbody>
-                        </table>
+                <div class="info_container">
+                    <form action="/agentPanel/createUser" method="post">
+                        <div class="block">
+                            <div id="user_creation">
+                                <h4>Create Users</h4>
+
+                                <div class="label_container">
+                                    <label for="name">Name</label>
+                                    <input name="name" required maxlength="100">
+                                </div>
+        
+                                <div class="label_container">
+                                    <label for="email">Email</label>
+                                    <input name="email" required maxlength="100" type="email">
+                                </div>
+                                
+                                <div class="label_container">
+                                    <label for="password">Password</label>
+                                    <input name="password" required maxlength="100" type="password">
+                                </div>
+
+                                <select name="role">
+                                    <option value="rol_n3r9Bk6sdCqkN5XN">User</option>
+                                    <% if (role == "Super Admin") { %>
+                                        <option value="rol_O69N7QGMEMtlMDhZ">Agent</option>
+                                    <% } %>
+                                </select>
+        
+                                <button type="submit" id="submit">Create</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="block">
+                        <div id="user_creation_requests">
+                            <div class="table_container">
+                                <table class="block_table">
+                                    <thead>
+                                        <th>User Mail</th>
+                                        <th>Requested At</th>
+                                    </thead>
+                                    <tbody>
+                                        <% for(i = 0; i < user_creation_requests.length; i++) { %>
+                                            <tr class="table_row" onclick="openUserCreationMenu('<%= user_creation_requests[i].user_email %>')">
+                                                <td><%= user_creation_requests[i].user_email %></td>
+                                                <td><%= user_creation_requests[i].formatted_requested_at %></td>
+                                            </tr>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info_container">
+                    <div class="block">
+                        <div class="table_container">
+                            <table class="block_table">
+                                <thead>
+                                    <th>Category ID</th>
+                                    <th>Name</th>
+                                </thead>
+                                <tbody>
+                                    <% for(i = 0; i < categories.length; i++) { %>
+                                        <tr class="table_row" onclick="openCategoryDeletionMenu('<%= i %>')">
+                                            <td><%= categories[i].id %></td>
+                                            <td><%= categories[i].name %></td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div id="category_creation">
+                            <form id="new_category" action="/dashboard/createCategory" method="post">
+                                <input id="category_name" name="category_name" placeholder="Add a new category..." required maxlength="50">
+
+                                <button id="new_category_button" type="submit">Create</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info_container">
+                    <div class="block">
+                        <div id="reopen_requests">
+                            <div class="table_container">
+                                <table class="block_table">
+                                    <thead>
+                                        <th>Ticket ID</th>
+                                        <th>Author</th>
+                                    </thead>
+                                    <tbody>
+                                        <% for(i = 0; i < reopen_requests.length; i++) { %>
+                                            <tr class="table_row" onclick="window.location='/dashboard/<%= reopen_requests[i].ticket_id %>'">
+                                                <td><%= reopen_requests[i].ticket_id %></td>
+                                                <td><%= reopen_requests[i].author_name %></td>
+                                            </tr>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info_container">
+                    <div class="block">
+                        <div id="update_tickets">
+                            <div class="table_container">
+                                <table class="block_table">
+                                    <thead>
+                                        <th>Ticket ID</th>
+                                        <th>Assigned Agent</th>
+                                    </thead>
+                                    <tbody>
+                                        <% for(i = 0; i < update_tickets.length; i++) { %>
+                                            <tr class="table_row" onclick="window.location='/dashboard/<%= update_tickets[i].id %>'">
+                                                <td><%= update_tickets[i].id %></td>
+                                                <td><%= update_tickets[i].agent_name ? update_tickets[i].agent_name : "None Assigned" %></td>
+                                            </tr>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div id="my_modal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-
-                <form action="/agentPanel/acceptCreateUser" method="post" id="accept_user_creation_form">
-                    <div id="modal_container">
+            <div id="user_creation_modal_content">
+                <div id="modal_container">
+                    <form action="/agentPanel/acceptCreateUser" method="post" id="accept_user_creation_form">
                         <div class="spacing_container">
                             <label for="name">Name</label>
                             <input id="name" name="name" value="Temp" disabled>
@@ -114,7 +287,7 @@
 
                         <div class="spacing_container">
                             <label for="email">Email</label>
-                            <input id="email" name="email" value="" disabled>
+                            <input class="email" name="email" value="" disabled>
                         </div>
 
                         <div class="spacing_container">
@@ -127,17 +300,37 @@
                         </div>
 
                         <button type="submit" id="accept_button">Accept</button>
+                    </form>
 
-                        <button id="deny_button" onclick="">Deny</button>
-                    </div>
-                </form>
+                    <form action="/agentPanel/denyCreateUser" method="post">
+                        <input class="email" name="email" value="" hidden>
+                        <button id="deny_button" type="submit">Deny</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="category_modal" class="modal">
+            <div id="category_deletion_modal_content">
+                <div id="confirmation"></div>
+                <div>All tickets and posts with this category will have their category set to "None Selected".</div>
+                <div id="button_container">
+                    <button id="accept" onclick="deleteCategory()">Yes</button>
+                    <button id="deny" onclick="closeCategoryModal()">No</button>
+                </div>
             </div>
         </div>
     </div>
 
 <script>
+    const update_tickets = <%- JSON.stringify(update_tickets) %>;
+    const categories = <%- JSON.stringify(categories) %>;
+    const tickets = <%- JSON.stringify(tickets) %>;
+    const user = <%- JSON.stringify(user) %>;
+    const role = <%- JSON.stringify(role) %>;
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
 
 <script src="/scripts/agent_panel.js"></script>
 
-<%- include("footer"); %>

@@ -4,8 +4,7 @@ function isAuthenticated(req, res, next) {
     if (req.isAuthenticated() && req.user) {
         return next();
     } else {
-        // User is not authenticated
-        res.redirect('/login');  // Redirect to the login page or any other route
+        res.redirect('/login');
     }
 }
 
@@ -14,7 +13,7 @@ function ensureAgentOrAdmin(req, res, next) {
       if (req.session.roles && (req.session.roles.includes('Agent') || req.session.roles.includes('Super Admin'))) {
           return next();
       } else {
-          res.status(403).send('Access Denied');
+          res.redirect('/dashboard');
       }
   } else {
       res.redirect('/login');
@@ -26,7 +25,7 @@ function ensureUser(req, res, next) {
       if (req.session.roles && req.session.roles.includes('User')) {
           return next();
       } else {
-          res.status(403).send('Access Denied');
+          res.redirect('/dashboard');
       }
   } else {
       res.redirect('/login');

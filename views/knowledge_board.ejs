@@ -1,4 +1,4 @@
-<%- include("header", {title: title}); %>
+<title><%= title %></title>
 <link rel="stylesheet" href="/style/knowledge_board.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -7,14 +7,14 @@
     <div id="main_view">
         <nav id="navbar">
             <h1 id="navbar_title">Ticket System</h1>
-
-            <h3>Logged in as: <%= user.displayName %></h3>
+            <div class="header_divider"></div>
+            <h3><%= user.displayName %> (<%= role %>)</h3>
         </nav>
         
         <div id="main_container">
             <div id="sidebar">
                 <div id="sidebar_navigation">
-                    <button class="sidebar_button" onclick="window.location='/dashboard'"><i class="material-icons" onclick="window.location='/dashboard'">dashboard</i>DASHBOARD</button>
+                    <button class="sidebar_button" onclick="window.location='/dashboard'"><span class="material-symbols-outlined">view_list</span>TICKETS</button>
                     <button class="sidebar_button" id="sidebar_selected" onclick="window.location='/knowledgeBoard'"><i class="material-icons">auto_stories</i>BOARD</button>
                     <button class="sidebar_button" onclick="window.location='/agentPanel'"><i class="material-icons">admin_panel_settings</i>AGENTS</button>
                 </div>
@@ -77,11 +77,15 @@
                         </thead>
                         <tbody>
                             <% for(i = posts.length - 1; i >= 0; i--) { %>
-                                <tr class="post" onclick="window.location='/knowledgeBoard/<%= posts[i].id %>'">
+                                <tr class="post" onclick="open_post('<%= i %>')">
                                     <td id="id"><%= posts[i].id %></td>
                                     <td id="author"><%= posts[i].author_name %></td>
                                     <td id="content"><%= posts[i].content %></td>
-                                    <td id="category"><%= posts[i].category %></td>
+                                    <% if (posts[i].category) { %>
+                                        <td id="category"><%= posts[i].category %></td>
+                                    <% } else {%>
+                                        <td id="category">None Selected</td>
+                                    <% } %>
                                     <td id="timestamp"><%= posts[i].formatted_timestamp %></td>
                                 </tr>
                             <% } %>
@@ -92,33 +96,50 @@
         </div>
 
         <div id="my_modal" class="modal">
-            <form action="/knowledgeBoard/newPost" method="post" id="create_post_form">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-
+            <div class="modal-content">
+                <form action="/knowledgeBoard/newPost" method="post" id="create_post_form">
                     <div id="description_container">
-                        <textarea id="description" name="content" rows="10" cols="40" placeholder="New post..." required maxlength="3000"></textarea>
+                        <textarea id="description" name="content" rows="10" cols="80" placeholder="New post..." required maxlength="3000"></textarea>
                 
                         <input type="hidden" name="author" value="<%= user.displayName %>">
                     </div>
-                
+                    <div id="divider"></div>
                     <div id="extras_container">
-                        <div>
-                            <label for="category">Choose a category:</label>
+                        <div id="choose_category">
+                            <h4>Choose a category</h4>
                             <select id="category_select" name="category">
                                 <% for (i = 1; i <= categories.length; i++) { %>
                                     <option value="<%= i %>"><%= categories[i - 1].name %></option>
                                 <% } %>
                             </select>
                         </div>
+
+                        <div class="horizontal_divider"></div>
+
+                        <div id="button_container">
+                            <button type="submit">Create Post</button>
+                        </div>
                     </div>
-                
-                    <button type="submit">Create Post</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 
+    <div id="post_modal" class="modal">
+        <div class="modal-content">
+            <div id="comment_container">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const posts = <%- JSON.stringify(posts) %>;
+    const tickets = <%- JSON.stringify(tickets) %>;
+    const user = <%- JSON.stringify(user) %>;
+    const role = <%- JSON.stringify(role) %>;
+    const update_tickets = <%- JSON.stringify(update_tickets) %>;
+</script>
+
 <script src="/scripts/knowledge_board.js"></script>
 
-<%- include("footer"); %>
