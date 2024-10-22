@@ -7,7 +7,7 @@ This IT helpdesk ticketing system is designed to run on a native Linux server, h
 ---
 
 Main view (User):
-![alt text](image-1.png)
+![Main view (User)](image-1.png)
 
 ---
 
