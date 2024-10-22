@@ -7,7 +7,7 @@
     },
 
     "mailer": {
-        "EMAIL_ADRESS": "pa1414.example@gmail.com",
+        "EMAIL_ADDRESS": "pa1414.example@gmail.com",
         "APPLICATION_PASSWORD": "fhau ejms lgny qqan",
         "HOST": "imap.gmail.com",
         "BYPASS_DOMAIN": "bth",
