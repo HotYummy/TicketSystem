@@ -272,3 +272,5 @@ To run the application, navigate to the project directory and run the following 
 ```bash
 node index.js
 ```
+
+If everything is set up correctly, the application should be accessible at <SERVER_IP>:\<PORT>/login
