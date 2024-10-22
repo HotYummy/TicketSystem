@@ -277,6 +277,36 @@ If everything is set up correctly, the application should be accessible at <SERV
 
 ---
 
+### Using the Software
+
+To use the software, log in as either a User, Agent or Super Admin.
+
+As a User, you can:
+
+* View all your tickets in a list which you can filter, sort and search in.
+* Send an email to the system to create tickets, or respond to emails from the system to create comments.
+* Click a ticket to enter the ticket view, where you can see more details about the ticket, aswell as post comments on the ticket.
+* Close your tickets.
+* Request a reopening of your closed tickets.
+
+As an Agent, you can:
+
+* View all created tickets in a list which you can filter, sort and search in.
+* Respond to emails from the system to create comments.
+* Click a ticket to enter the ticket view, where you can see more details about the ticket, post comments on the ticket,
+change the category, aswell as see relevant posts from the knowledge board.
+* Access the knowledge board, where you can view and share information that might be helpful to other agents.
+* Access the agent panel, where you can see some statistics about tickets, add new users and see requests to create accounts, add or remove categories, and see requests to reopen tickets.
+
+As a Super Admin, you can:
+
+* Do all the same things as a regular agent.
+* See tickets that have not been attended to in more than 3 days.
+* Create new Agents.
+* Assign Agents to tickets.
+
+---
+
 ### Licence
 
 MIT License
