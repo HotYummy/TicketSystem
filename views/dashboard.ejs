@@ -171,7 +171,7 @@
                                 <h4>Choose a category</h4>
                                 <select id="category_select" name="category">
                                     <% for (i = 1; i <= categories.length; i++) { %>
-                                        <option value="<%= i %>"><%= categories[i - 1].name %></option>
+                                        <option value="<%= categories[i - 1].id %>"><%= categories[i - 1].name %></option>
                                     <% } %>
                                 </select>
                             </div>

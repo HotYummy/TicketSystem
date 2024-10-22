@@ -166,9 +166,9 @@
                                 </div>
 
                                 <select name="role">
-                                    <option value="rol_n3r9Bk6sdCqkN5XN">User</option>
+                                    <option value="<%= user_role_id %>">User</option>
                                     <% if (role == "Super Admin") { %>
-                                        <option value="rol_O69N7QGMEMtlMDhZ">Agent</option>
+                                        <option value="<%= agent_role_id %>">Agent</option>
                                     <% } %>
                                 </select>
         
@@ -292,9 +292,9 @@
 
                         <div class="spacing_container">
                             <select name="role">
-                                <option value="rol_n3r9Bk6sdCqkN5XN">User</option>
+                                <option value="<%= user_role_id %>">User</option>
                                 <% if (role == "Super Admin") { %>
-                                    <option value="rol_O69N7QGMEMtlMDhZ">Agent</option>
+                                    <option value="<%= agent_role_id %>">Agent</option>
                                 <% } %>
                             </select>
                         </div>

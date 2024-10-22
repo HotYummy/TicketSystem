@@ -5,25 +5,26 @@
 
 const bodyParser = require("body-parser");
 
-const port    = 3000;
-const path    = require("path");
+const path = require("path");
 const express = require("express");
-const app     = express();
+const app = express();
 const middleware = require("./middleware/index.js");
 const route = require("./routes/routes.js");
 const config = require("./config/config.json")
 const session = require('express-session');
 
+const port = config.Express.PORT;
+
 require('./services/mailer.js');
 
 app.set("view engine", "ejs");
 app.use(session({
-    secret: '$1LP;d/#p3Mkk#IjbK`LN3[]FbT9hP',  // Use a strong secret key in production
+    secret: config.Express.SECRET,
     resave: false,
     saveUninitialized: false,
     rolling: true,
     cookie: { 
-        maxAge: 30 * 60 * 1000,
+        maxAge: config.Express.MAX_AGE * 60 * 1000,
         httpOnly: true,
         secure: false }
 }));

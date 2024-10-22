@@ -1,21 +1,41 @@
 {
+    "MariaDB": {
+        "host": "YOUR_MARIADB_HOST_IP",
+        "user": "YOUR_DATABASE_USER",
+        "password": "YOUR_DATABASE_PASSWORD",
+        "database": "TicketSystem"
+    },
+
     "mailer": {
-        "EMAIL_ADRESS": "pa1414.example@gmail.com",
-        "APPLICATION_PASSWORD": "fhau ejms lgny qqan",
+        "EMAIL_ADDRESS": "YOUR_EMAIL_ADDRESS",
+        "APPLICATION_PASSWORD": "YOUR_EMAIL_APP_PASSWORD",
         "HOST": "imap.gmail.com",
-        "BYPASS_DOMAIN": "bth",
-        "SUPER_ADMIN_MAIL": "selma.godis@gmail.com"
+        "BYPASS_DOMAIN": "YOUR_BYPASS_DOMAIN",
+        "SUPER_ADMIN_MAIL": "YOUR_SUPER_ADMIN_EMAIL"
+    },
+
+    "Express": {
+        "PORT": "YOUR_PORT_NUMBER",
+        "MAX_AGE": "YOUR_MAX_AGE_IN_MINUTES",
+        "SECRET": "YOUR_SESSION_SECRET"
     },
 
     "Auth0": {
-        "CLIENT_DOMAIN": "dev-blk8l122gwbg1okk.us.auth0.com",
-        "CLIENT_ID": "r6bpghFMp2WaCpqT4fwNLlIguyCdMjU3",
-        "CLIENT_SECRET": "t7L-TIspvC3leyLZOoCRe_ioUT2b252xa1BE8Yv3YBf10wd6Yd8H9FRiqZIUKkOK",
-        "CALLBACK_URL": "http://79.76.63.170:3000/callback",
-        "LOGOUT_URL": "http://79.76.63.170:3000/login"
+        "CLIENT_DOMAIN": "YOUR_AUTH0_DOMAIN",
+        "CLIENT_ID": "YOUR_AUTH0_CLIENT_ID",
+        "CLIENT_SECRET": "YOUR_AUTH0_CLIENT_SECRET",
+        "CALLBACK_URL": "http://<SERVER_IP>:<PORT>/callback",
+        "LOGOUT_URL": "http://<SERVER_IP>:<PORT>/login",
+        "LOGOUT_REDIRECT_URL": "https://<YOUR_AUTH0_DOMAIN>/v2/logout?returnTo=http://<SERVER_IP>:<PORT>/login&client_id=<YOUR_AUTH0_CLIENT_ID>",
+        "USER_ROLE_ID": "YOUR_USER_ROLE_ID",
+        "AGENT_ROLE_ID": "YOUR_AGENT_ROLE_ID",
+        "SUPER_ADMIN_ROLE_ID": "YOUR_SUPER_ADMIN_ROLE_ID"
     },
 
     "Multer": {
-        "MAX_FILE_SIZE_MB": 1
+        "MAX_FILE_SIZE_MB": "YOUR_MAX_FILE_SIZE_MB",
+        "MAX_FILE_AMOUNT": "YOUR_MAX_FILE_AMOUNT",
+        "ALLOWED_FILE_TYPES": "YOUR_ALLOWED_FILE_TYPES",
+        "UPLOADS_DIRECTORY": "YOUR_UPLOADS_DIRECTORY"
     }
 }

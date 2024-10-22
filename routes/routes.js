@@ -13,7 +13,6 @@ const Auth0Strategy = require('passport-auth0');
 const multer = require("multer");
 const path = require("path");
 const axios = require("axios");
-const fs = require("fs");
 
 router.use(passport.initialize());
 router.use(passport.session());
@@ -37,7 +36,7 @@ passport.deserializeUser((user, done) => {
 
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, '../public/uploads'));
+        cb(null, path.join(__dirname, config.Multer.UPLOADS_DIRECTORY));
     },
     filename: function (req, file, cb) {
         const originalName = Buffer.from(file.originalname, 'latin1').toString('utf-8');
@@ -49,10 +48,11 @@ const max_size = config.Multer.MAX_FILE_SIZE_MB * 1000 * 1000;
 
 var upload = multer({
     storage: storage,
-    limits: { fileSize: max_size, files: 10 },
+    limits: { fileSize: max_size, files: config.Multer.MAX_FILE_AMOUNT },
     fileFilter: function (req, file, cb) {
-        var filetypes = /jpeg|jpg|png|pdf/;
-        var mimetype = filetypes.test(file.mimetype);
+    var filetypes = new RegExp(config.Multer.ALLOWED_FILE_TYPES, 'i');
+
+    var mimetype = filetypes.test(file.mimetype);
 
         var extname = filetypes.test(
             path.extname(file.originalname).toLowerCase()
@@ -69,7 +69,7 @@ var upload = multer({
         );
     },
 
-}).array("uploads", 10);
+}).array("uploads", config.Multer.MAX_FILE_AMOUNT);
 
 router.get('/login', passport.authenticate('auth0', {
     scope: 'openid email profile'
@@ -96,7 +96,7 @@ router.get('/logout', (req, res) => {
     req.logout((err) => {
         req.session.destroy(() => {
             res.clearCookie('connect.sid');
-            res.redirect(`https://${config.Auth0.CLIENT_DOMAIN}/v2/logout?returnTo=${config.Auth0.LOGOUT_URL}&client_id=${config.Auth0.CLIENT_ID}`);
+            res.redirect(config.Auth0.LOGOUT_REDIRECT_URL);
         });
     });
 });
@@ -176,7 +176,7 @@ router.get("/dashboard/:id", isAuthenticated, ticketAccess, async (req, res) => 
 
         const agent_options = {
             method: 'GET',
-            url: `https://${config.Auth0.CLIENT_DOMAIN}/api/v2/roles/rol_O69N7QGMEMtlMDhZ/users`,
+            url: `https://${config.Auth0.CLIENT_DOMAIN}/api/v2/roles/${config.Auth0.USER_ROLE_ID}/users`,
             headers: {
                 'content-type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`
@@ -187,7 +187,7 @@ router.get("/dashboard/:id", isAuthenticated, ticketAccess, async (req, res) => 
 
         const super_admin_options = {
             method: 'GET',
-            url: `https://${config.Auth0.CLIENT_DOMAIN}/api/v2/roles/rol_u1DXizL9RSrfy4lj/users`,
+            url: `https://${config.Auth0.CLIENT_DOMAIN}/api/v2/roles/${config.Auth0.SUPER_ADMIN_ROLE_ID}/users`,
             headers: {
                 'content-type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`
@@ -307,7 +307,10 @@ router.get("/agentPanel", isAuthenticated, ensureAgentOrAdmin, async (req, res) 
         role: req.session.roles[0],
         tickets: await funcs.getTickets(),
         categories: await funcs.getCategories(),
-        update_tickets: await funcs.getTicketsNotification()
+        update_tickets: await funcs.getTicketsNotification(),
+        user_role_id: config.Auth0.USER_ROLE_ID,
+        agent_role_id: config.Auth0.AGENT_ROLE_ID,
+        super_admin_role_id: config.Auth0.SUPER_ADMIN_ROLE_ID
     };
 
     res.render("agent_panel", data);
@@ -336,27 +339,6 @@ router.post("/agentPanel/deleteCategory", isAuthenticated, ensureAgentOrAdmin, a
     await funcs.deleteCategory(id);
     res.redirect(`/agentPanel`);
 });
-
-// router.post("/agentPanel/changeFileSize", isAuthenticated, ensureAgentOrAdmin, async (req, res) => {
-//     const { new_size } = req.body;
-//     fs.readFile("../config/config.json", 'utf8', (err, data) => {
-//         if (err) {
-//             return res.status(500).json({ error: 'Failed to read JSON file' });
-//         }
-
-//         const json_data = JSON.parse(data);
-
-//         json_data.Multer.MAX_FILE_SIZE_MB = newSize;
-
-//         fs.writeFile(filePath, JSON.stringify(json_data, null, 2), (err) => {
-//             if (err) {
-//                 return res.status(500).json({ error: 'Failed to write to JSON file' });
-//             }
-//             res.json(json_data);
-//         });
-//     });
-//     res.redirect(`/agentPanel`);
-// });
 
 router.get("/knowledgeBoard", isAuthenticated, ensureAgentOrAdmin, async (req, res) => {
     let data = {

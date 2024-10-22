@@ -42,7 +42,6 @@ module.exports = {
 };
 
 const mysql  = require("promise-mysql");
-const dbConfig = require("../config/db/config.json");
 const config = require("../config/config.json")
 const { query } = require("express");
 const moment = require('moment');
@@ -154,7 +153,7 @@ function generateRandomPassword(length = 12) {
 }
 
 (async function() {
-    db = await mysql.createConnection(dbConfig);
+    db = await mysql.createConnection(config.MariaDB);
 
     process.on("exit", () => {
         db.end();
