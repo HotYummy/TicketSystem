@@ -9,7 +9,7 @@ const FormData = require("form-data");
 const fs = require("fs");
 const path = require("path");
 const imapConfig = {
-  user: config.mailer.EMAIL_ADRESS,
+  user: config.mailer.EMAIL_ADDRESS,
   password: config.mailer.APPLICATION_PASSWORD,
   host: config.mailer.HOST,
   port: 993,
@@ -253,7 +253,7 @@ fetchEmails();
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: config.mailer.EMAIL_ADRESS,
+    user: config.mailer.EMAIL_ADDRESS,
     pass: config.mailer.APPLICATION_PASSWORD
   }
 });
@@ -263,7 +263,7 @@ function sendMail(recipient, ticket_name, ticket_id, event, comment = "", user_p
   var mailOptions;
   if(event == "requested_user_creation"){
     mailOptions = {
-      from: config.mailer.EMAIL_ADRESS,
+      from: config.mailer.EMAIL_ADDRESS,
       to: recipient,
       subject: ' Your request to create an account has been made! ',
       html: `
@@ -274,7 +274,7 @@ function sendMail(recipient, ticket_name, ticket_id, event, comment = "", user_p
     };
   } else if(event == "user_created"){
     mailOptions = {
-      from: config.mailer.EMAIL_ADRESS,
+      from: config.mailer.EMAIL_ADDRESS,
       to: recipient,
       subject: ' Your account has been created! ',
       html: `
@@ -282,23 +282,23 @@ function sendMail(recipient, ticket_name, ticket_id, event, comment = "", user_p
       <br>
       <p>Your password is: <strong>${user_password}</strong></p>
       <br>
-      <p>To start using the TicketSystem, please go to <a href="http://79.76.63.170:3000/login"><strong>79.76.63.170:3000/login</strong></a>.</p>
+      <p>To start using the TicketSystem, please go to <a href="${config.Auth0.LOGOUT_URL}"><strong>${config.Auth0.LOGOUT_URL}</strong></a>.</p>
       `
     };
   } else if(event == "closed"){
     mailOptions = {
-      from: config.mailer.EMAIL_ADRESS,
+      from: config.mailer.EMAIL_ADDRESS,
       to: recipient,
       subject: ' Your ticket has been closed. ',
       html: `
       <p>Your ticket <strong>"${ticket_name}"</strong> has been closed.</p>
       <br>
-      <p>If you wish to see your tickets, or request a reopening of a closed ticket, please go to:  <a href="http://79.76.63.170:3000/login"><strong>79.76.63.170:3000/login</strong></a>.</p>
+      <p>If you wish to see your tickets, or request a reopening of a closed ticket, please go to:  <a href="${config.Auth0.LOGOUT_URL}"><strong>${config.Auth0.LOGOUT_URL}</strong></a>.</p>
       `
     };
   } else if(event == "comment"){
     mailOptions = {
-      from: config.mailer.EMAIL_ADRESS,
+      from: config.mailer.EMAIL_ADDRESS,
       to: recipient,
       subject: ` Your ticket has a new comment. Ticket ID: ${ticket_id}`,
       html: `
@@ -306,23 +306,23 @@ function sendMail(recipient, ticket_name, ticket_id, event, comment = "", user_p
       <br>
       <p>New comment: <em>"${comment}"</em></p>
       <br>
-      <p>You can respond either by replying to this email, or by going to:  <a href="http://79.76.63.170:3000/login"><strong>79.76.63.170:3000/login</strong></a>.</p>
+      <p>You can respond either by replying to this email, or by going to:  <a href="${config.Auth0.LOGOUT_URL}"><strong>${config.Auth0.LOGOUT_URL}</strong></a>.</p>
       `
     };
   } else if(event == "user_first_login"){
     mailOptions = {
-      from: config.mailer.EMAIL_ADRESS,
+      from: config.mailer.EMAIL_ADDRESS,
       to: recipient,
       subject: ` Choose name and password. `,
       html: `
       <p>You need to choose a name and password before creating a new ticket. </p>
       <br>
-      <p>To choose a name and password, please go to:  <a href="http://79.76.63.170:3000/login"><strong>79.76.63.170:3000/login</strong></a> and login with the password you have been provided.</p>
+      <p>To choose a name and password, please go to:  <a href="${config.Auth0.LOGOUT_URL}"><strong>${config.Auth0.LOGOUT_URL}</strong></a> and login with the password you have been provided.</p>
       `
     };
   } else if(event == "3_day_notifcation"){
     mailOptions = {
-      from: config.mailer.EMAIL_ADRESS,
+      from: config.mailer.EMAIL_ADDRESS,
       to: recipient,
       subject: ` A ticket has gone unanswered for more than 3 days! Ticket ID: ${ticket_id}`,
       html: `
@@ -330,43 +330,43 @@ function sendMail(recipient, ticket_name, ticket_id, event, comment = "", user_p
       <br>
       <p>The agent assigned to the ticket is: <em>${agent_name}</em></p>
       <br>
-      <p>To handle your tickets, please go to:  <a href="http://79.76.63.170:3000/login"><strong>79.76.63.170:3000/login</strong></a>.</p>
+      <p>To handle your tickets, please go to:  <a href="${config.Auth0.LOGOUT_URL}"><strong>${config.Auth0.LOGOUT_URL}</strong></a>.</p>
       `
     };
   } else if(event == "ticket_assigned"){
     mailOptions = {
-      from: config.mailer.EMAIL_ADRESS,
+      from: config.mailer.EMAIL_ADDRESS,
       to: recipient,
       subject: ` A new ticket has been assigned to you! Ticket ID: ${ticket_id}`,
       html: `
       <p>The ticket: <strong>"${ticket_name}"</strong>, has been assigned to you.</p>
       <br>
-      <p>To handle your tickets, please go to:  <a href="http://79.76.63.170:3000/login"><strong>79.76.63.170:3000/login</strong></a>.</p>
+      <p>To handle your tickets, please go to:  <a href="${config.Auth0.LOGOUT_URL}"><strong>${config.Auth0.LOGOUT_URL}</strong></a>.</p>
       `
     };
   } else if(event == "user_denied"){
     mailOptions = {
-      from: config.mailer.EMAIL_ADRESS,
+      from: config.mailer.EMAIL_ADDRESS,
       to: recipient,
       subject: ` Your request to create an account has been denied. `,
       text: ` Your request to create an account has been denied by one of our agents. `
     };
   } else if(event == "duplicate_request_user_creation"){
     mailOptions = {
-      from: config.mailer.EMAIL_ADRESS,
+      from: config.mailer.EMAIL_ADDRESS,
       to: recipient,
       subject: ` Your request to create an account has already been made. `,
       text: ` Your request to create an account has already been made, please wait for one of our agents to accept your request. `
     };
   } else{
     mailOptions = {
-      from: config.mailer.EMAIL_ADRESS,
+      from: config.mailer.EMAIL_ADDRESS,
       to: recipient,
       subject: ` There has been an update in your ticket. Ticket ID: ${ticket_id}`,
       html: `
       <p>The ticket: <strong>"${ticket_name}"</strong> has a new update!</p>
       <br>
-      <p>To view your tickets, please go to:  <a href="http://79.76.63.170:3000/login"><strong>79.76.63.170:3000/login</strong></a>.</p>
+      <p>To view your tickets, please go to:  <a href="${config.Auth0.LOGOUT_URL}"><strong>${config.Auth0.LOGOUT_URL}</strong></a>.</p>
       `
     };
   }

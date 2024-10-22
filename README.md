@@ -81,11 +81,21 @@ Main view (User):
     sudo mysql_secure_installation
     ```
 
+    Enter the following answers during the setup:
+
+    * Enter current password for root (enter for none): enter
+    * Switch to unix_socket authentication? (y/n): n
+    * Change the root password? (y/n): n
+    * Remove anonymous users? (y/n): y
+    * Disallow root login remotely? (y/n): y
+    * Remove test database and access to it? (y/n): y
+    * Reload privilege tables now? (y/n): y
+
     3. #### Create User
 
         1. Log into the MariaDB shell by running the following command
         ```bash
-        sudo mysql -u root -p
+        sudo mysql
         ```
 
         2. Create a new user and grant privileges
@@ -203,8 +213,8 @@ Main view (User):
     * Express Configuration
         ```bash
         "Express": {
-            "PORT": "YOUR_PORT_NUMBER",
-            "MAX_AGE": "YOUR_MAX_AGE_IN_MINUTES",
+            "PORT": YOUR_PORT_NUMBER,
+            "MAX_AGE": YOUR_MAX_AGE_IN_MINUTES,
             "SECRET": "YOUR_SESSION_SECRET"
         }
         ```
@@ -237,8 +247,8 @@ Main view (User):
     * Multer Configuration
         ```bash
         "Multer": {
-            "MAX_FILE_SIZE_MB": "YOUR_MAX_FILE_SIZE_MB",
-            "MAX_FILE_AMOUNT": "YOUR_MAX_FILE_AMOUNT",
+            "MAX_FILE_SIZE_MB": YOUR_MAX_FILE_SIZE_MB,
+            "MAX_FILE_AMOUNT": YOUR_MAX_FILE_AMOUNT,
             "ALLOWED_FILE_TYPES": "YOUR_ALLOWED_FILE_TYPES",
             "UPLOADS_DIRECTORY": "YOUR_UPLOADS_DIRECTORY"
         }
@@ -246,7 +256,7 @@ Main view (User):
         * Replace YOUR_MAX_FILE_SIZE_MB with the maximum file size in MB.
         *  Replace YOUR_MAX_FILE_AMOUNT with the maximum number of files that can be uploaded at once.
         *  Replace YOUR_ALLOWED_FILE_TYPES with a list of allowed file types separated by | (e.g. "jpeg|jpg|png|pdf").
-        *  Replace YOUR_UPLOADS_DIRECTORY with the directory where uploaded files will be stored.
+        *  Replace YOUR_UPLOADS_DIRECTORY with the directory where uploaded files will be stored (if you want to use the default location, set this to *../public/uploads*).
 
 ---
 
