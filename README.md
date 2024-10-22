@@ -55,7 +55,7 @@ Main view (User):
     1. Install Node.js and git
     ```bash
     sudo apt update
-    sudo apt install nodejs git
+    sudo apt install nodejs git npm
     ```
 
     2. Project Initialization
