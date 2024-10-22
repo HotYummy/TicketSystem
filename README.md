@@ -31,7 +31,7 @@ Main view (User):
 * A native Linux server (Ubuntu or similar)
 * Necessary software packages (e.g., npm, Git)
 
-#### Auth0 Setup:
+#### Auth0:
 
 * An Auth0 account
 * Application configured in Auth0 for SSO, including:
@@ -39,7 +39,7 @@ Main view (User):
     * Logout URL
     * API configuration for token management
 
-#### Email Configuration:
+#### Gmail:
 
 * Gmail account configured for IMAP and NodeMailer, including:
     * 2FA
@@ -90,7 +90,7 @@ Main view (User):
 
         2. Create a new user and grant privileges
         ```bash
-        CREATE DATABASE ticketing_system;
+        CREATE DATABASE TicketSystem;
         CREATE USER 'user_name'@'localhost' IDENTIFIED BY 'your_password';
         GRANT ALL PRIVILEGES ON *.* TO 'user_name'@'localhost';
         FLUSH PRIVILEGES;
@@ -248,9 +248,13 @@ Main view (User):
         *  Replace YOUR_ALLOWED_FILE_TYPES with a list of allowed file types separated by | (e.g. "jpeg|jpg|png|pdf").
         *  Replace YOUR_UPLOADS_DIRECTORY with the directory where uploaded files will be stored.
 
+---
+
 ### Testing
 
 During the development of this project, all features and functionalities were tested manually to ensure proper operation. Thus, no automated unit or integrations tests exist.
+
+---
 
 ### Run
 To run the application, navigate to the project directory and run the following command:
