@@ -52,7 +52,7 @@ Main view (Agent/Super Admin):
 
 1. #### Setting Up the Development Environment
 
-    1. Install Node.js and git
+    1. Install Node.js, npm and git
     ```bash
     sudo apt update
     sudo apt install nodejs git npm
