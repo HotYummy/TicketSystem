@@ -167,7 +167,7 @@ const fetchEmails = async () => {
                       if(is_reply){
                         let new_comment = "";
                         let line = "";
-                        for(let i = 0; !line.includes("pa1414.example@gmail.com") && line != "________________________________"; i++){
+                        for(let i = 0; !line.includes(config.mailer.EMAIL_ADDRESS) && line != "________________________________"; i++){
                           new_comment += line + "\n";
                           line = parsed.text.split("\n")[i];
                         }
@@ -192,7 +192,7 @@ const fetchEmails = async () => {
       
                           formData.append("ticket_id", ticket_id[0].id);
       
-                          axios.post('http://79.76.63.170:3000/uploadFiles', formData, {
+                          axios.post(`http://${config.Multer.IP_ADDRESS_AND_PORT}/uploadFiles`, formData, {
                             headers: {
                                 'Content-Type': 'multipart/form-data'
                             }

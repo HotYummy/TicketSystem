@@ -161,11 +161,13 @@ Main view (Agent/Super Admin):
         ```
 
         Now, deploy the action and add it to the Post Login trigger, between start and complete.
-    6. Go to User **Management > Roles** and add three roles:
+    6. Go to **User Management > Roles** and add three roles:
         * User
         * Agent
         * Super Admin
-    7. Go to User **Management > Users** and add a new user with the role Super Agent. You can either add more users and agents under **Management > Users**, or you can use the Super Agent account to log into the Ticket System and add more users and agents that way.
+
+        **(PLEASE NOTE: The capitalization is very important, the system may not function propperly without it!)**
+    7. Go to **User Management > Users** and add a new user with the role Super Agent. You can either add more users and agents under **User Management > Users**, or you can use the Super Agent account to log into the Ticket System and add more users and agents that way.
 
 4. #### Gmail Setup
 
@@ -228,9 +230,9 @@ Main view (Agent/Super Admin):
             "CLIENT_DOMAIN": "YOUR_AUTH0_DOMAIN",
             "CLIENT_ID": "YOUR_AUTH0_CLIENT_ID",
             "CLIENT_SECRET": "YOUR_AUTH0_CLIENT_SECRET",
-            "CALLBACK_URL": "http://<SERVER_IP>:<PORT>/callback",
-            "LOGOUT_URL": "http://<SERVER_IP>:<PORT>/login",
-            "LOGOUT_REDIRECT_URL": "https://<YOUR_AUTH0_DOMAIN>/v2/logout?returnTo=http://<SERVER_IP>:<PORT>/login&client_id=<YOUR_AUTH0_CLIENT_ID>",
+            "CALLBACK_URL": "http://SERVER_IP:PORT/callback",
+            "LOGOUT_URL": "http://SERVER_IP:PORT/login",
+            "LOGOUT_REDIRECT_URL": "https://YOUR_AUTH0_DOMAIN/v2/logout?returnTo=http://SERVER_IP:PORT/login&client_id=YOUR_AUTH0_CLIENT_ID",
             "USER_ROLE_ID": "YOUR_USER_ROLE_ID",
             "AGENT_ROLE_ID": "YOUR_AGENT_ROLE_ID",
             "SUPER_ADMIN_ROLE_ID": "YOUR_SUPER_ADMIN_ROLE_ID"
@@ -240,18 +242,19 @@ Main view (Agent/Super Admin):
         * Replace YOUR_AUTH0_CLIENT_ID with your Auth0 client ID.
         * Replace YOUR_AUTH0_CLIENT_SECRET with your Auth0 client secret.
         * For CALLBACK_URL, LOGOUT_URL and LOGOUT_REDIRECT_URL, set:
-            * <SERVER_IP> to the IP address of your server.
-            * <PORT> to the same port number you set for the express server.
+            * SERVER_IP to the IP address of your server.
+            * PORT to the same port number you set for the express server.
         * Replace YOUR_USER_ROLE_ID, YOUR_AGENT_ROLE_ID and YOUR_SUPER_ADMIN_ROLE_ID with the IDs of the corresponding roles in your Auth0 tenant, you can get these by going to **User Management > Roles > User/Agent/Super Admin**.
     
     * Multer Configuration
         ```bash
-        "Multer": {
+            "Multer": {
             "MAX_FILE_SIZE_MB": YOUR_MAX_FILE_SIZE_MB,
             "MAX_FILE_AMOUNT": YOUR_MAX_FILE_AMOUNT,
             "ALLOWED_FILE_TYPES": "YOUR_ALLOWED_FILE_TYPES",
             "UPLOADS_DIRECTORY": "YOUR_UPLOADS_DIRECTORY",
-            "RELATIVE_UPLOADS_DIRECTORY": "RELATIVE_UPLOADS_DIRECTORY"
+            "RELATIVE_UPLOADS_DIRECTORY": "RELATIVE_UPLOADS_DIRECTORY",
+            "IP_ADDRESS_AND_PORT": "YOUR_SERVER_IP_AND_PORT"
         }
         ```
         * Replace YOUR_MAX_FILE_SIZE_MB with the maximum file size in MB.
@@ -259,6 +262,7 @@ Main view (Agent/Super Admin):
         *  Replace YOUR_ALLOWED_FILE_TYPES with a list of allowed file types separated by | (e.g. "jpeg|jpg|png|pdf").
         *  Replace YOUR_UPLOADS_DIRECTORY with the directory where uploaded files will be stored (if you want to use the default location, set this to *../public/uploads*).
         * Replace RELATIVE_UPLOADS_DIRECTORY with the relative path to the uploads directory from the *public* folder.(if you want to use the default location, set this to */uploads*).
+        * Replace YOUR_SERVER_IP_AND_PORT with the IP address and port number of your server, separated by a ":" (IMPORTANT).
 
 ---
 
