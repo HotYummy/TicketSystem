@@ -119,15 +119,15 @@
                                     </div>
                                     <div>
                                         <% if (files[i].path.endsWith('.pdf')) { %>
-                                            <a href="/uploads/<%= files[i].path %>" target="_blank">
+                                            <a href="<%= uploads_directory %>/<%= files[i].path %>" target="_blank">
                                                 <i class="fa fa-file-pdf-o" style="font-size:48px;color:red"></i>
                                             </a>
                                         <% } else { %>
-                                            <img class="attachment_image" src="/uploads/<%= files[i].path %>" onclick="openImageModal('<%= files[i].path %>')">
+                                            <img class="attachment_image" src="<%= uploads_directory %>/<%= files[i].path %>" onclick="openImageModal('<%= files[i].path %>')">
                                         <% } %>
                                     </div>
                                     <div>
-                                        <a href="/uploads/<%= files[i].path %>" download>
+                                        <a href="<%= uploads_directory %>/<%= files[i].path %>" download>
                                             <span class="material-symbols-outlined">
                                                 download
                                             </span>
@@ -151,6 +151,8 @@
                             <div class="comment_timestamp">
                                 <%= ticket.formatted_opened_at %>
                             </div>
+
+                            <input type="hidden" value="">
                         </div>
 
                         <div class="comment_text">
@@ -168,6 +170,8 @@
                                 <div class="comment_timestamp">
                                     <%= logs[i].formatted_timestamp %>
                                 </div>
+
+                                <input type="hidden" value="<%= logs[i].author_role %>">
                             </div>
     
                             <div class="comment_text">
@@ -189,7 +193,9 @@
                             <div class="post_recommendation">
                                 <div class="post_header">
                                     <a><%= posts[i].author_name %></a>
-                                    <button id="comment_post" onclick="return confirm('Do you want to create a comment from this post?') && comment(<%= JSON.stringify(posts[i].content) %>);"><span class="material-symbols-outlined">add_comment</span></button>
+                                    <% if (!ticket.closed_at && (((role == "Agent" || role == "Super Admin") && ticket.agent_id == user.id) || role == "User")) { %>
+                                        <button id="comment_post" onclick="return confirm('Do you want to create a comment from this post?') && comment(<%= JSON.stringify(posts[i].content) %>);"><span class="material-symbols-outlined">add_comment</span></button>
+                                    <% } %>
                                 </div>
                                 <div class="post_content"><%= posts[i].content %></div>
                             </div>

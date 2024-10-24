@@ -250,13 +250,15 @@ Main view (Agent/Super Admin):
             "MAX_FILE_SIZE_MB": YOUR_MAX_FILE_SIZE_MB,
             "MAX_FILE_AMOUNT": YOUR_MAX_FILE_AMOUNT,
             "ALLOWED_FILE_TYPES": "YOUR_ALLOWED_FILE_TYPES",
-            "UPLOADS_DIRECTORY": "YOUR_UPLOADS_DIRECTORY"
+            "UPLOADS_DIRECTORY": "YOUR_UPLOADS_DIRECTORY",
+            "RELATIVE_UPLOADS_DIRECTORY": "RELATIVE_UPLOADS_DIRECTORY"
         }
         ```
         * Replace YOUR_MAX_FILE_SIZE_MB with the maximum file size in MB.
         *  Replace YOUR_MAX_FILE_AMOUNT with the maximum number of files that can be uploaded at once.
         *  Replace YOUR_ALLOWED_FILE_TYPES with a list of allowed file types separated by | (e.g. "jpeg|jpg|png|pdf").
         *  Replace YOUR_UPLOADS_DIRECTORY with the directory where uploaded files will be stored (if you want to use the default location, set this to *../public/uploads*).
+        * Replace RELATIVE_UPLOADS_DIRECTORY with the relative path to the uploads directory from the *public* folder.(if you want to use the default location, set this to */uploads*).
 
 ---
 

@@ -250,9 +250,9 @@ CREATE TRIGGER update_ticket
 BEFORE UPDATE ON Tickets
 FOR EACH ROW
 BEGIN
-    IF NEW.category_id IS NOT NULL THEN
-        SET NEW.updated_at = CURRENT_TIMESTAMP;
-    END IF;
+  IF NEW.category_id IS NOT NULL AND NEW.unread_agent = OLD.unread_agent AND NEW.unread_user = OLD.unread_user THEN
+      SET NEW.updated_at = CURRENT_TIMESTAMP;
+  END IF;
 END;;
 DELIMITER ;
 

@@ -282,6 +282,21 @@ body {
   position: relative;
 }
 
+/* Buttons container styling */
+#buttons_container {
+  display: flex;
+  align-items: center;
+}
+
+/* Button styling */
+#buttons_container button {
+  margin: 10px;
+}
+
+#buttons_container form {
+  margin: 0;
+}
+
 /* Ticket title styling */
 #title {
   font-size: 25px;
@@ -348,7 +363,6 @@ body {
   margin-right: 15px;
 }
 
-/* Description container layout */
 #description {
   width: 100%;
   line-height: 1.3;
@@ -356,7 +370,15 @@ body {
   border-radius: 5px;
   max-height: 200px;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 10px;
+}
+
+#description pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  margin: 0;
 }
 
 #attachments_container{
@@ -457,21 +479,6 @@ body {
   background-color: #f1f1f1;
   padding: 5px;
   border-radius: 0px 0px 5px 5px;
-}
-
-/* Buttons container styling */
-#buttons_container {
-  display: flex;
-  align-items: center;
-}
-
-/* Button styling */
-#buttons_container button {
-  margin: 10px;
-}
-
-#buttons_container form {
-  margin: 0;
 }
 
 /* Close ticket button styling */

@@ -9,12 +9,31 @@ function openUserCreationMenu(email) {
     email_input[1].value = email;
 }
 
-// Close the modal if the user clicks anywhere outside it
+const category_modal = document.getElementById("category_modal");
+const confirmation = document.getElementById("confirmation");
+const category_table = document.getElementsByClassName("block_table")[1];
+const category_table_rows = Array.from(category_table.rows);
+category_table_rows.shift();
+let index_to_delete;
+
+function openCategoryDeletionMenu(i) {
+    category_modal.style.display = "flex";
+    confirmation.innerText = "Are you sure you want to delete the category: " + categories[i].name + "?";
+    index_to_delete = i;
+}
+
+function closeCategoryModal() {
+    category_modal.style.display = "none";
+}
+
 window.onclick = function(event) {
     if (event.target === modal) {
         modal.style.display = "none";
+    } else if (event.target === category_modal) {
+        category_modal.style.display = "none";
     }
 };
+
 
 document.getElementById("accept_user_creation_form").onsubmit = function() {
     email_input[0].disabled = false;
@@ -48,29 +67,6 @@ function changeView(i) {
 }
 
 changeView(current_view)
-
-const category_modal = document.getElementById("category_modal");
-const confirmation = document.getElementById("confirmation");
-const category_table = document.getElementsByClassName("block_table")[1];
-const category_table_rows = Array.from(category_table.rows);
-category_table_rows.shift();
-let index_to_delete;
-
-function openCategoryDeletionMenu(i) {
-    category_modal.style.display = "flex";
-    confirmation.innerText = "Are you sure you want to delete the category: " + categories[i].name + "?";
-    index_to_delete = i;
-}
-
-function closeCategoryModal() {
-    category_modal.style.display = "none";
-}
-
-window.onclick = function(event) {
-    if (event.target === category_modal) {
-        category_modal.style.display = "none";
-    }
-};
 
 function deleteCategory() {
     fetch(`/agentPanel/deleteCategory`, {

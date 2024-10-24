@@ -24,7 +24,7 @@
 
             <div id="floating_container">
                 <div id="container_header">
-                    <h1 id="view_title">Admin Panel</h1>
+                    <h1 id="view_title">Agent Panel</h1>
                     <div class="agent_nav_button" onclick="changeView(0)"><span class="material-symbols-outlined">grid_view</span>Dashboard</div>
                     <div class="agent_nav_button" onclick="changeView(1)"><span class="material-symbols-outlined">person_add</span>Add Users</div>
                     <div class="agent_nav_button" onclick="changeView(2)"><span class="material-symbols-outlined">category</span>Add Categories</div>
@@ -45,7 +45,7 @@
                                 let open_count = 0;
                             
                                 while(i < tickets.length) {
-                                    if(!tickets[i].updated_at && !tickets[i].closed_at) {
+                                    if(!tickets[i].agent_id && !tickets[i].closed_at) {
                                         open_count++;
                                     }
                                     i++;
@@ -65,7 +65,7 @@
                                 in_progress_count = 0;
                             
                                 while(i < tickets.length) {
-                                    if(tickets[i].updated_at && !tickets[i].closed_at) {
+                                    if(tickets[i].agent_id && !tickets[i].closed_at) {
                                         in_progress_count++;
                                     }
                                     i++;
@@ -219,7 +219,7 @@
                         </div>
 
                         <div id="category_creation">
-                            <form id="new_category" action="/dashboard/createCategory" method="post">
+                            <form id="new_category" action="/agentPanel/createCategory" method="post">
                                 <input id="category_name" name="category_name" placeholder="Add a new category..." required maxlength="50">
 
                                 <button id="new_category_button" type="submit">Create</button>

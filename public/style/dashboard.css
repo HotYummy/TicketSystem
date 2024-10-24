@@ -78,6 +78,41 @@ body{
     height: 100%;
 }
 
+#first_login_modal_container{
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+#first_login_modal_container h1{
+  width: 60%;
+}
+
+#input_container{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  height: 100%;
+}
+
+#input_container button{
+  height: 40px;
+  width: 100px;
+  border-radius: 8px;
+  background-color: #5500cb;
+  color: white;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+}
+
+.spacing_container{
+  display: flex;
+  flex-direction: column;
+}
+
 #category_and_files{
   display: flex;
   justify-content: space-between;
@@ -411,6 +446,7 @@ body{
       margin-left: 10px;
       display: none;
       margin-top: 20%;
+      z-index: 1000;
     }
 
       #filter_box {

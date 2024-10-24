@@ -81,11 +81,11 @@
                                         <div id="filter_assignment" name="filter_assignment" class="checkbox_list">
                                             <div class="checkbox_container">
                                                 <label for="me">My Tickets</label>
-                                                <input type="checkbox" name="me">
+                                                <input type="checkbox" name="me" class="checkbox_to_disable">
                                             </div>
                                             <div class="checkbox_container">
                                                 <label for="other">Others Tickets</label>
-                                                <input type="checkbox" name="other">
+                                                <input type="checkbox" name="other" class="checkbox_to_disable">
                                             </div>
                                         </div>
                                     </div>
@@ -134,7 +134,7 @@
                                     <td class="last_changed" data-timestamp="<%= tickets[i].closed_at ? tickets[i].closed_at : (tickets[i].updated_at ? tickets[i].updated_at : tickets[i].opened_at) %>"><%= tickets[i].time_since_change %></td>
                                     <% if(!tickets[i].agent_id && !tickets[i].closed_at) { %>
                                         <td id="status_open" class="status">Open</td>
-                                    <% } else if(((tickets[i].unread_agent && role != "User") &&  tickets[i].agent_name == user.displayName)|| tickets[i].unread_user && role == "User") { %>
+                                    <% } else if(((tickets[i].unread_agent && role != "User") && tickets[i].agent_name == user.displayName) || tickets[i].unread_user && role == "User") { %>
                                         <td id="status_update" class="status">New Update</td>
                                     <% } else if(tickets[i].agent_id && !tickets[i].closed_at) { %>
                                         <td id="status_in_progress" class="status">In Progress</td>
@@ -196,21 +196,25 @@
             <div class="modal-content">
 
                 <form action="/dashboard/firstLogin" method="post" id="update_user_form">
-                    <div id="modal_container">
+                    <div id="first_login_modal_container">
                         <h1>Please enter a name and a password to use the TicketSystem.</h1>
                         <input type="hidden" value="<%= user.emails[0].value %>" name="email">
 
-                        <div class="spacing_container">
-                            <label for="name">Name</label>
-                            <input name="name" required maxlength="100">
+                        <div id="divider"></div>
+                        
+                        <div id="input_container">
+                            <div class="spacing_container">
+                                <label for="name">Name</label>
+                                <input name="name" required maxlength="100">
+                            </div>
+    
+                            <div class="spacing_container">
+                                <label for="password">Password</label>
+                                <input name="password" required type="password" id="password">
+                            </div>
+    
+                            <button type="submit">Continue</button>
                         </div>
-
-                        <div class="spacing_container">
-                            <label for="password">Password</label>
-                            <input name="password" required type="password" id="password">
-                        </div>
-
-                        <button type="submit">Continue</button>
                     </div>
                 </form>
             </div>

@@ -53,10 +53,6 @@ const path = require("path");
 const FormData = require("form-data");
 let db;
 
-function preprocess(text) {
-    return text.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
-}
-
 function calculateMatchScore(ticket_desc, post_desc) { 
     const ticket_words = ticket_desc.toLowerCase().split(/\W+/);
     const post_words = post_desc.toLowerCase().split(/\W+/);
@@ -419,21 +415,24 @@ async function denyCreateUser(user_email) {
     let sql = "CALL accept_create_user(?)"
 
 
-    fs.readFile("../config/config.json", 'utf8', (err, data) => {
+    let file_path = path.join(__dirname, '../mailer_cache.json');
+    fs.readFile(file_path, 'utf8', async (err, data) => {
         if (err) {
-            return res.status(500).json({ error: 'Failed to read JSON file' });
+            console.log("Error reading mailer_cache.json: ", err);
+            return;
         }
+    
+        const cached_tickets = JSON.parse(data);
 
-        const json_data = JSON.parse(data);
-
-        json_data.Multer.MAX_FILE_SIZE_MB = newSize;
-
-        fs.writeFile(filePath, JSON.stringify(json_data, null, 2), (err) => {
-            if (err) {
-                return res.status(500).json({ error: 'Failed to write to JSON file' });
-            }
-            res.json(json_data);
-        });
+        if(cached_tickets[user_email]){
+            delete cached_tickets[user_email];
+    
+            fs.writeFile(file_path, JSON.stringify(cached_tickets, null, 2), (err) => {
+                if (err) {
+                console.log("Error writing to mailer_cache.json: ", err);
+                }
+            });
+        }
     });
 
     try {
@@ -656,7 +655,7 @@ async function getKnowledgeBoardPostsForTicket(ticket_description, ticket_catego
 
     try{
         let res = await db.query(sql);
-        const threshold = 0.23;
+        const threshold = 0.28;
         const posts = [];
         for (const post of res[0]){
             const score = calculateMatchScore(ticket_description, post.content);
@@ -676,13 +675,16 @@ async function updateUnread(role, ticket_id, event) {
         sql = "CALL set_unread_user(?, ?)";
     } else {
         sql = "CALL set_unread_agent(?, ?)";
-    }
+    }   
 
-    try{
-        await db.query(sql, [ticket_id, event]);
-        return true;
-    } catch(error) {
-        console.error("Error executing query:", error);
+    let ticket = await getTicketByTicketId(ticket_id);
+    if((role == "User" && ticket.unread_user != event) || (role != "User" && ticket.unread_agent != event)){
+        try{
+            await db.query(sql, [ticket_id, event]);
+            return true;
+        } catch(error) {
+            console.error("Error executing query:", error);
+        }
     }
 }
 

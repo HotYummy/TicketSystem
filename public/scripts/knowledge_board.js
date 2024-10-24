@@ -10,7 +10,7 @@ const post_modal = document.getElementById("post_modal");
 const comment_container = document.getElementById("comment_container");
 
 function open_post(id) {
-  post_modal.style.display = "block";
+  post_modal.style.display = "flex";
   comment_container.innerText = posts[id].content;
 }
 

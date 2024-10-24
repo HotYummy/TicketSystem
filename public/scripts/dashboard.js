@@ -223,6 +223,11 @@ function filterTickets() {
   });
 }
 
+if(role == "User"){
+  for(const checkbox of document.getElementsByClassName("checkbox_to_disable")){
+    checkbox.disabled = true;
+  }
+}
 
 document.querySelectorAll("#filter_category input[type='checkbox']").forEach(checkbox => {
   checkbox.addEventListener("change", filterTickets);

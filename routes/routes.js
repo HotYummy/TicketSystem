@@ -160,12 +160,6 @@ router.post("/dashboard/createTicket", isAuthenticated, upload, async (req, res)
     res.redirect("/dashboard");
 });
 
-router.post("/dashboard/createCategory", isAuthenticated, ensureAgentOrAdmin, async (req, res) => {
-    const category_name = req.body.category_name;
-    await funcs.createCategory(category_name);
-    res.redirect("/dashboard");
-});
-
 router.get("/dashboard/:id", isAuthenticated, ticketAccess, async (req, res) => {
     const user = req.user;
     const id = parseInt(req.params.id);
@@ -176,7 +170,7 @@ router.get("/dashboard/:id", isAuthenticated, ticketAccess, async (req, res) => 
 
         const agent_options = {
             method: 'GET',
-            url: `https://${config.Auth0.CLIENT_DOMAIN}/api/v2/roles/${config.Auth0.USER_ROLE_ID}/users`,
+            url: `https://${config.Auth0.CLIENT_DOMAIN}/api/v2/roles/${config.Auth0.AGENT_ROLE_ID}/users`,
             headers: {
                 'content-type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`
@@ -215,7 +209,8 @@ router.get("/dashboard/:id", isAuthenticated, ticketAccess, async (req, res) => 
         agents,
         posts: await funcs.getKnowledgeBoardPostsForTicket(ticket.description, ticket.category_name),
         tickets: await funcs.getTickets(),
-        update_tickets: await funcs.getTicketsNotification()
+        update_tickets: await funcs.getTicketsNotification(),
+        uploads_directory: config.Multer.RELATIVE_UPLOADS_DIRECTORY
     };
 
     res.render("ticket_details", data);
@@ -334,6 +329,12 @@ router.post("/agentPanel/denyCreateUser", isAuthenticated, ensureAgentOrAdmin, a
     res.redirect(`/agentPanel`);
 });
 
+router.post("/agentPanel/createCategory", isAuthenticated, ensureAgentOrAdmin, async (req, res) => {
+    const category_name = req.body.category_name;
+    await funcs.createCategory(category_name);
+    res.redirect("/agentPanel");
+});
+
 router.post("/agentPanel/deleteCategory", isAuthenticated, ensureAgentOrAdmin, async (req, res) => {
     const { id } = req.body;
     await funcs.deleteCategory(id);
@@ -342,7 +343,7 @@ router.post("/agentPanel/deleteCategory", isAuthenticated, ensureAgentOrAdmin, a
 
 router.get("/knowledgeBoard", isAuthenticated, ensureAgentOrAdmin, async (req, res) => {
     let data = {
-        title: "Agent Panel",
+        title: "Knowledge Board",
         user: req.user,
         posts: await funcs.getKnowledgeBoardPosts(),
         categories: await funcs.getCategories(),

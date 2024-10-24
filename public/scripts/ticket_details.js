@@ -58,10 +58,11 @@ function changeCategory() {
 const comments = document.getElementById("comments_container").getElementsByClassName("comment");
 
 for(let i = 0; i < comments.length; i++){
-  if(comments[i].innerText.includes("System")){
+  const role = comments[i].querySelector('input[type="hidden"]');
+  if(!role.value){
     comments[i].getElementsByClassName("comment_text")[0].style.backgroundColor = "#d7f2e0";
   }
-  if(comments[i].innerText.split("\n")[0] == ticket.agent_name){
+  if(role.value == "Agent" ||role.value == "Super Admin"){
     comments[i].getElementsByClassName("comment_text")[0].style.backgroundColor = "#d6c4f2";
   }
 }
